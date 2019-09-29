@@ -18,7 +18,7 @@ function dimensions {
 
 	#Cols will be the number of characters on the first line, which should always be num(tabs) in that line + 1...
 	#Inspired by this answer: https://stackoverflow.com/a/31349082
-	cols=$(cat "$filename" | head -n1 | grep -o "\t" | wc -l)
+	cols=$(cat $filename | head -n1 | grep -o "\t" | wc -l)
 	cols=$((cols+1))
 
 	printf "$rows $cols\n"
