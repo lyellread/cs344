@@ -1,5 +1,25 @@
-#!bin/bash
+#!/usr/bin/bash
 
 # $1 is the command to execute, on { dims transpose mean add multiply}
 # $2..3 are matricies that will be passed as arguments.
 
+
+
+
+if [ "$#" -eq 2 ] && [ "$1" = "dims" ]
+then
+
+	echo "Dimensions with $1, $2"
+
+elif [ "$#" -eq 2 ] && [ "$1" = "transpose" ]
+then
+
+	echo "Transpose with $1, $2"
+
+else
+
+	echo "Error with $1, $2"
+
+fi
+
+echo "Complete"
