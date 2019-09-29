@@ -11,7 +11,18 @@ function dimensions {
 	#Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
 	#Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
 
+	#TODO: Check if file is openable...
 
+	#Rows will be calculated by the number of lines in the file...
+	rows = $(wc -l $1)
+
+	#Cols will be the number of characters on the first line, which should always be num(tabs) in that line + 1...
+	#Inspired by this answer: https://stackoverflow.com/a/31349082
+	cols = $(head -n1 $1 | grep -o "\t" | wc -l)
+	(($cols++))
+
+
+	printf ("$rows $cols\n")
 
 }
 
