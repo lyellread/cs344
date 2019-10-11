@@ -6,14 +6,15 @@
 function dimensions {
 
 	#matrix dims [MATRIX]
-	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#	Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
-	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
-	#Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
+	#[DONE] Prints error message to stderr, nothing to stdout and return value != 0 if:
+	#	[DONE] Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
+	#	[DONE] Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+	#[DONE] Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
 
 	#Check file is openable. Print to stderr: https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
 	if [ -f $filename ]
 	then
+		
 		#Rows will be calculated by the number of lines in the file...
 		#Using the "<" stdin redirect, there is no filename. https://stackoverflow.com/questions/10238363/how-to-get-wc-l-to-print-just-the-number-of-lines-without-file-name
 		rows=$(wc -l < $filename)
@@ -26,13 +27,11 @@ function dimensions {
 		exit 0
 
 	else
+		
 		>&2 echo "Error opening file. Exiting."
 		exit 2
-		
+
 	fi
-
-
-	
 
 }
 
@@ -45,7 +44,40 @@ function transpose {
 	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
 	#Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
 
-	echo "Placeholder"
+	if [ -f $filename ]
+	then
+		
+		#Get the number of cols in the matrix
+
+		rows=$(wc -l < $filename)
+		words=$(wc -w < $filename)
+		col=$((words/rows))
+
+		#Make a tempfile to store the output; https://unix.stackexchange.com/questions/181937/how-create-a-temporary-file-in-shell-script
+		temp_file=$(mktemp)
+
+		#For that range, append the new file with cut -f n (with \n replaced with \t)
+		for c in $(seq 1 "$col")
+		do
+			cut -f "$c" "$filename" | tr "\n" "\t" >> "$temp_file"
+			echo "" >> "$temp_file"
+
+		done
+
+		#cat out that file
+		cat "$temp_file"
+		rm "$temp_file"
+		exit 0
+
+
+
+
+	else
+		
+		>&2 echo "Error opening file. Exiting."
+		exit 2
+
+	fi
 }
 
 
@@ -103,6 +135,9 @@ elif [ "$#" -eq 2 ] && [ "$1" = "transpose" ]
 then
 
 	echo "Transpose with $1, $2"
+	filename=$2
+	transpose
+
 
 
 elif [ "$#" -eq 2 ] && [ "$1" = "mean" ]
