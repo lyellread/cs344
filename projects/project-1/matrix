@@ -7,23 +7,32 @@ function dimensions {
 
 	#matrix dims [MATRIX]
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
-	#Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+	#	Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
+	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
 	#Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
 
-	#TODO: Check if file is openable...
+	#Check file is openable. Print to stderr: https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
+	if [ -f $filename ]
+	then
+		#Rows will be calculated by the number of lines in the file...
+		#Using the "<" stdin redirect, there is no filename. https://stackoverflow.com/questions/10238363/how-to-get-wc-l-to-print-just-the-number-of-lines-without-file-name
+		rows=$(wc -l < $filename)
+		words=$(wc -w < $filename)
 
-	#Rows will be calculated by the number of lines in the file...
-	#Using the "<" stdin redirect, there is no filename. https://stackoverflow.com/questions/10238363/how-to-get-wc-l-to-print-just-the-number-of-lines-without-file-name
-	rows=$(wc -l < $filename)
-	words=$(wc -w < $filename)
+		#Cols is the number of total words / the number of rows... because words = rows * cols.
+		cols=$((words/rows))
 
-	#Cols will be the number of characters on the first line, which should always be num(tabs) in that line + 1...
-	#Inspired by this answer: https://stackoverflow.com/a/31349082
-	#cols=$(cat $filename | head -n1 | grep -o "\t" | wc -l)
-	cols=$((words/rows))
+		printf "$rows $cols\n"
+		exit 0
 
-	printf "$rows $cols\n"
+	else
+		>&2 echo "Error opening file. Exiting."
+		exit 2
+		
+	fi
+
+
+	
 
 }
 
@@ -32,8 +41,8 @@ function transpose {
 
 	#matrix transpose [MATRIX]
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#Argument count is greater than 1 (e.g. `matrix transpose m1 m2`).
-	#Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
+	#	Argument count is greater than 1 (e.g. `matrix transpose m1 m2`).
+	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
 	#Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
 
 	echo "Placeholder"
@@ -44,8 +53,8 @@ function mean {
 
 	#matrix mean [MATRIX]
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#Argument count is greater than 1 (e.g. `matrix mean m1 m2`).
-	#Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
+	#	Argument count is greater than 1 (e.g. `matrix mean m1 m2`).
+	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
 	#Otherwise, prints a row vector mean of the input matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
 
 	echo "Placeholder"
@@ -56,9 +65,9 @@ function add {
 
 	#matrix add MATRIX_LEFT MATRIX_RIGHT
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
-	#Argument count is 2 but the file named by either argument is not readable (e.g. `matrix add m1 no_such_file`).
-	#The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
+	#	Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
+	#	Argument count is 2 but the file named by either argument is not readable (e.g. `matrix add m1 no_such_file`).
+	#	The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
 	#Otherwise, prints the sum of both matrices, in a valid matrix format to stdout, nothing to stderr, and returns 0.
 	echo "Placeholder"
 
@@ -70,9 +79,9 @@ function multiply {
 
 	#matrix multiply MATRIX_LEFT MATRIX_RIGHT
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#Argument count does not equal 2 (e.g. `matrix multiply m1 m2 m3` or `matrix multiply m1`).
-	#Argument count is 2 but the file named by either argument is not readable (e.g. `matrix multiply m1 no_such_file`).
-	#The dimensions of the input matrices do not allow them to be multiplied together following the rules of matrix multiplication.
+	#	Argument count does not equal 2 (e.g. `matrix multiply m1 m2 m3` or `matrix multiply m1`).
+	#	Argument count is 2 but the file named by either argument is not readable (e.g. `matrix multiply m1 no_such_file`).
+	#	The dimensions of the input matrices do not allow them to be multiplied together following the rules of matrix multiplication.
 	#Otherwise, prints the product of both matrices, with the first argument as the left matrix and the second argument as the right matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. (`matrix multiply A B` should return A*B, not B*A)
 	echo "Placeholder"
 
@@ -115,7 +124,7 @@ then
 
 else
 
-	echo "Error with $1, $2"
+	exit 1
 
 fi
 
