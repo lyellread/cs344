@@ -14,12 +14,14 @@ function dimensions {
 	#TODO: Check if file is openable...
 
 	#Rows will be calculated by the number of lines in the file...
-	rows=$(wc -l $filename)
+	#Using the "<" stdin redirect, there is no filename. https://stackoverflow.com/questions/10238363/how-to-get-wc-l-to-print-just-the-number-of-lines-without-file-name
+	rows=$(wc -l < $filename)
+	words=$(wc -w < $filename)
 
 	#Cols will be the number of characters on the first line, which should always be num(tabs) in that line + 1...
 	#Inspired by this answer: https://stackoverflow.com/a/31349082
-	cols=$(cat $filename | head -n1 | grep -o "\t" | wc -l)
-	cols=$((cols+1))
+	#cols=$(cat $filename | head -n1 | grep -o "\t" | wc -l)
+	cols=$((words/rows))
 
 	printf "$rows $cols\n"
 
