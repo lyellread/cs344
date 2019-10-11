@@ -40,9 +40,9 @@ function transpose {
 
 	#matrix transpose [MATRIX]
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#	Argument count is greater than 1 (e.g. `matrix transpose m1 m2`).
-	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
-	#Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+	#	[DONE] Argument count is greater than 1 (e.g. `matrix transpose m1 m2`).
+	#	[DONE] Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
+	#[DONE] Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
 
 	if [ -f $filename ]
 	then
@@ -64,13 +64,10 @@ function transpose {
 
 		done
 
-		#cat out that file
+		#Cat out that file
 		cat "$temp_file"
 		rm "$temp_file"
 		exit 0
-
-
-
 
 	else
 		
