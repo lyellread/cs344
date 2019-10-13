@@ -60,6 +60,7 @@ function transpose {
 		for c in $(seq 1 "$col")
 		do
 			cut -f "$c" "$filename" | tr "\n" "\t" >> "$temp_file"
+			truncate -s-1 "$filename"
 			echo "" >> "$temp_file"
 
 		done
@@ -82,8 +83,8 @@ function mean {
 
 	#matrix mean [MATRIX]
 	#Prints error message to stderr, nothing to stdout and return value != 0 if:
-	#	Argument count is greater than 1 (e.g. `matrix mean m1 m2`).
-	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
+	#	[DONE] Argument count is greater than 1 (e.g. `matrix mean m1 m2`).
+	#	[DONE] Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
 	#Otherwise, prints a row vector mean of the input matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
 
 	if [ -f $filename ]
@@ -113,7 +114,8 @@ function add {
 	if [ -f $filename1 ] && [ -f $filename2 ]
 	then
 		
-		echo "OK"
+		
+		exit 0
 	
 	else
 		
@@ -134,7 +136,18 @@ function multiply {
 	#	The dimensions of the input matrices do not allow them to be multiplied together following the rules of matrix multiplication.
 	#Otherwise, prints the product of both matrices, with the first argument as the left matrix and the second argument as the right matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. (`matrix multiply A B` should return A*B, not B*A)
 	
-	echo "Placeholder"
+	if [ -f $filename1 ] && [ -f $filename2 ]
+	then
+		
+		
+		exit 0
+	
+	else
+		
+		>&2 echo "Error opening file. Exiting."
+		exit 2
+
+	fi
 
 }
 
@@ -144,7 +157,7 @@ function multiply {
 if [ "$#" -eq 2 ] && [ "$1" = "dims" ]
 then
 
-	echo "Dimensions with $1, $2"
+	#echo "Dimensions with $1, $2"
 	filename=$2
 	dimensions
 
@@ -152,7 +165,7 @@ then
 elif [ "$#" -eq 2 ] && [ "$1" = "transpose" ]
 then
 
-	echo "Transpose with $1, $2"
+	#echo "Transpose with $1, $2"
 	filename=$2
 	transpose
 
@@ -161,7 +174,7 @@ then
 elif [ "$#" -eq 2 ] && [ "$1" = "mean" ]
 then
 
-	echo "Mean with $1, $2"
+	#echo "Mean with $1, $2"
 	filename=$2
 	mean
 
@@ -169,7 +182,7 @@ then
 elif [ "$#" -eq 3 ] && [ "$1" = "add" ]
 then
 
-	echo "Add with $1, $2, $3"
+	#echo "Add with $1, $2, $3"
 	filename1=$2
 	filename2=$3
 	add
@@ -178,7 +191,7 @@ then
 elif [ "$#" -eq 3 ] && [ "$1" = "multiply" ]
 then
 
-	echo "Multiply with $1, $2, $3"
+	#echo "Multiply with $1, $2, $3"
 	filename1=$2
 	filename2=$3
 	multiply
@@ -190,4 +203,4 @@ else
 
 fi
 
-echo "Complete"
+#echo "Complete"
