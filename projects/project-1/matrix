@@ -86,7 +86,18 @@ function mean {
 	#	Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
 	#Otherwise, prints a row vector mean of the input matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
 
-	echo "Placeholder"
+	if [ -f $filename ]
+	then
+		
+		echo "OK"
+		exit 0
+
+	else
+		
+		>&2 echo "Error opening file. Exiting."
+		exit 2
+
+	fi
 }
 
 
@@ -98,8 +109,18 @@ function add {
 	#	Argument count is 2 but the file named by either argument is not readable (e.g. `matrix add m1 no_such_file`).
 	#	The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
 	#Otherwise, prints the sum of both matrices, in a valid matrix format to stdout, nothing to stderr, and returns 0.
-	echo "Placeholder"
+	
+	if [ -f $filename1 ] && [ -f $filename2 ]
+	then
+		
+		echo "OK"
+	
+	else
+		
+		>&2 echo "Error opening file. Exiting."
+		exit 2
 
+	fi
 
 }
 
@@ -112,8 +133,8 @@ function multiply {
 	#	Argument count is 2 but the file named by either argument is not readable (e.g. `matrix multiply m1 no_such_file`).
 	#	The dimensions of the input matrices do not allow them to be multiplied together following the rules of matrix multiplication.
 	#Otherwise, prints the product of both matrices, with the first argument as the left matrix and the second argument as the right matrix, in a valid matrix format to stdout, nothing to stderr, and returns 0. (`matrix multiply A B` should return A*B, not B*A)
+	
 	echo "Placeholder"
-
 
 }
 
@@ -141,21 +162,30 @@ elif [ "$#" -eq 2 ] && [ "$1" = "mean" ]
 then
 
 	echo "Mean with $1, $2"
+	filename=$2
+	mean
 
 
 elif [ "$#" -eq 3 ] && [ "$1" = "add" ]
 then
 
 	echo "Add with $1, $2, $3"
+	filename1=$2
+	filename2=$3
+	add
 
 
 elif [ "$#" -eq 3 ] && [ "$1" = "multiply" ]
 then
 
-	echo "multiply with $1, $2, $3"
+	echo "Multiply with $1, $2, $3"
+	filename1=$2
+	filename2=$3
+	multiply
 
 else
 
+	>&2 echo "Failed to match argument layout (and/or) number with a valid function. Quitting."
 	exit 1
 
 fi
