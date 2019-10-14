@@ -141,6 +141,7 @@ function mean {
 		cat $temp_file
 
 		rm $sum_vector $temp_file $average
+		exit 0
 
 
 	else
@@ -164,7 +165,57 @@ function add {
 	if [ -f $filename1 ] && [ -f $filename2 ]
 	then
 		
-		
+		output=$(mktemp)
+
+		for x in $(seq 1 "$m")
+		do
+			intermediate=$(mktemp)
+
+			for y in $(seq 1 "$p")
+			do
+
+				# cut row x from file 1
+				current_row=$(head -n "$x" "$filename1" | tail -1)
+
+				# cut col y from file 2
+				current_col=$(cut -f "$y" "filename2" | paste -s)
+
+				# define a tempfile to acc the products of row and col at n
+				accumulator=$(mktemp)
+
+				for z in $(seq 1 "$n")
+				do
+
+					col_at_n=$(cut -f "$z" "$current_col")
+					row_at_n=$(cut -f "$z" "$current_col")
+
+					$(($col_at_n * $row_at_n)) >> $accumulator
+					echo "" >> $accumulator
+
+				done
+
+				echo "Accumulator:"
+				cat $accumulator
+
+
+				sum=0
+				while read num
+				do
+					((sum += num))
+
+				done < $accumulator
+
+				echo $sum >> $intermediate
+				echo "" >> $intermediate
+
+			done
+
+			echo $intermediate | paste -s >> $output
+			echo "" >> $output
+
+		done
+
+		cat $output
 		exit 0
 	
 	else
@@ -188,6 +239,8 @@ function multiply {
 	
 	if [ -f $filename1 ] && [ -f $filename2 ]
 	then
+
+
 		
 		
 		exit 0
@@ -300,21 +353,59 @@ then
 elif [ "$#" -eq 3 ] && [ "$1" = "add" ]
 then
 
-	#echo "Add with $1, $2, $3"
-	filename1=$2
-	filename2=$3
-	nargs=$#
-	add
+	d1=$(./matrix dims "$2")
+	d2=$(./matrix dims "$3")
+
+	if [[ "$d1" == "$d2" ]]
+	then
+
+		#echo "Add with $1, $2, $3"
+		filename1=$2
+		filename2=$3
+		nargs=$#
+		add		
+
+	else
+
+		>&2 echo "Matricies aren't the same size. Quitting!"
+		exit 3
+
+	fi
 
 
 elif [ "$#" -eq 3 ] && [ "$1" = "multiply" ]
 then
 
-	#echo "Multiply with $1, $2, $3"
-	filename1=$2
-	filename2=$3
-	nargs=$#
-	multiply
+	d1=$(./matrix dims "$2" | tail -c 2)
+	d2=$(./matrix dims "$3" | head -c 1)
+
+	#echo $d1
+	#echo $d2
+
+	if [[ "$d1" == "$d2" ]]
+	then
+
+		#echo "Multiply with $1, $2, $3"
+		
+		m=$(./matrix dims "$2" | head -c 1)
+		n=$d1
+		p=$(./matrix dims "$3" | tail -n 2)
+
+		# m x n * n x p
+
+		filename1=$2
+		filename2=$3
+		nargs=$#
+		multiply	
+
+	else
+
+		>&2 echo "Matricies aren't the same size. Quitting!"
+		exit 3
+
+	fi
+
+	
 
 else
 
