@@ -172,7 +172,8 @@ then
 	if [ "$#" -eq 1 ]
 	then
 
-		temp=$(mktemp)
+		#temp=$(mktemp)
+		temp=temfile
 
 		while read -r line
 		do 
