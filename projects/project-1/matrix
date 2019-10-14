@@ -88,11 +88,43 @@ function mean {
 	if [ -f $filename ]
 	then
 		
-		echo "OK"
-		exit 0
+		rows=$(wc -l "$filename")
+		words=$(wc -w < $filename)
+		col=$((words/rows))
 
-	else
+		#Make a tempfile to store the output; https://unix.stackexchange.com/questions/181937/how-create-a-temporary-file-in-shell-script
+		temp_file=$(mktemp)
+		output_file=$(mktmp)
+
+		#For that range, append the new file with cut -f n (with \n replaced with \t)
+		for c in $(seq 1 "$col")
+		do
+			cut -f "$c" "$filename" > $temp_file
+			sum=0
+
+			while read num
+			do
+				((sum += num))
+
+			done < $temp_file
+
+			echo $sum >> $output_file
+			echo "" >> $output_file
 		
+		done
+
+		cut -f "1" "$output_file" | paste -s > $output_file
+
+
+		cat -A $output_file
+		
+		# Div all by total rows...
+
+
+
+		# Print out
+	else
+
 		>&2 echo "Error opening file. Exiting."
 		exit 2
 
