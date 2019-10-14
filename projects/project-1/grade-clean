@@ -1,0 +1,3 @@
+#! /bin/bash
+
+rm m?.? m??.? Error_Log* gradeout

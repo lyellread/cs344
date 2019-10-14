@@ -126,10 +126,12 @@ function mean {
 
 		for c in $(seq 1 "$col")
 		do
-			temp_file=$(cut -f "$c" "$sum_vector")
-			temp_file=$((temp_file/rows))
+			temp_var=$(cut -f "$c" "$sum_vector")
+			#temp_file=$((temp_file/rows))
+			temp_var=$(((temp_var + (rows/2)*( (temp_var>0)*2-1 )) / rows))
 
-			echo "$temp_file" >> "$averages"		
+
+			echo "$temp_var" >> "$averages"		
 		done
 
 		cut -f "1" "$averages" | paste -s > $temp_file
@@ -137,6 +139,8 @@ function mean {
 		# Print out
 
 		cat $temp_file
+
+		rm $sum_vector $temp_file $average
 
 
 	else

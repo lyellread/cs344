@@ -1,0 +1,4 @@
+#! /bin/bash
+
+./grade-clean
+./p1gradingscript -d ./matrix > gradeout
