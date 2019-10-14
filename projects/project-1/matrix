@@ -212,10 +212,31 @@ then
 elif [ "$#" -le 2 ] && [ "$1" = "dims" ]
 then
 
-	#echo "Dimensions with $1, $2"
-	filename=$2
-	nargs=$#
-	dimensions
+	if [ "$#" -eq 1 ]
+	then
+
+		temp=$(mktemp)
+		while read -r line
+		do 
+			echo "$line" >> $temp
+			#echo "$line"
+			
+		done
+
+		filename=$temp
+		nargs=2
+		dimensions
+		rm $temp
+
+	else
+	
+		#echo "Dimensions with $1, $2"
+		filename=$2
+		nargs=$#
+		dimensions
+
+	fi
+	
 
 
 elif [ "$#" -le 2 ] && [ "$1" = "transpose" ]
@@ -224,26 +245,25 @@ then
 	if [ "$#" -eq 1 ]
 	then
 
-		#temp=$(mktemp)
-		temp=temfile
-
+		temp=$(mktemp)
 		while read -r line
 		do 
-			echo $line >> $temp
-			echo $line
+			echo "$line" >> $temp
+			#echo "$line"
 			
 		done
 
 		filename=$temp
 		nargs=2
 		transpose
+		rm $temp
 
 	else
 	
-	#echo "Transpose with $1, $2"
-	filename=$2
-	nargs=$#
-	transpose
+		#echo "Transpose with $1, $2"
+		filename=$2
+		nargs=$#
+		transpose
 
 	fi
 
@@ -251,10 +271,30 @@ then
 elif [ "$#" -le 2 ] && [ "$1" = "mean" ]
 then
 
-	#echo "Mean with $1, $2"
-	filename=$2
-	nargs=$#
-	mean
+	if [ "$#" -eq 1 ]
+	then
+
+		temp=$(mktemp)
+		while read -r line
+		do 
+			echo "$line" >> $temp
+			#echo "$line"
+			
+		done
+
+		filename=$temp
+		nargs=2
+		mean
+		rm $temp
+
+	else
+	
+		#echo "Mean with $1, $2"
+		filename=$2
+		nargs=$#
+		mean
+
+	fi
 
 
 elif [ "$#" -eq 3 ] && [ "$1" = "add" ]
