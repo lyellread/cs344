@@ -88,13 +88,14 @@ function mean {
 	if [ -f $filename ]
 	then
 		
-		rows=$(wc -l "$filename")
-		words=$(wc -w < $filename)
+		rows=$(wc -l < "$filename")
+		words=$(wc -w < "$filename")
 		col=$((words/rows))
 
 		#Make a tempfile to store the output; https://unix.stackexchange.com/questions/181937/how-create-a-temporary-file-in-shell-script
 		temp_file=$(mktemp)
-		output_file=$(mktmp)
+		output_file=$(mktemp)
+		sum_vector=$(mktemp)
 
 		#For that range, append the new file with cut -f n (with \n replaced with \t)
 		for c in $(seq 1 "$col")
@@ -109,20 +110,35 @@ function mean {
 			done < $temp_file
 
 			echo $sum >> $output_file
-			echo "" >> $output_file
 		
 		done
 
-		cut -f "1" "$output_file" | paste -s > $output_file
+		cut -f "1" "$output_file" | paste -s > $sum_vector
+			
+		# Clean up & remake some tmpfiles
 
+		rm $temp_file
+		rm $output_file
+		temp_file=$(mktemp)
+		averages=$(mktemp)
 
-		cat -A $output_file
-		
 		# Div all by total rows...
 
+		for c in $(seq 1 "$col")
+		do
+			temp_file=$(cut -f "$c" "$sum_vector")
+			temp_file=$((temp_file/rows))
 
+			echo "$temp_file" >> "$averages"		
+		done
+
+		cut -f "1" "$averages" | paste -s > $temp_file
 
 		# Print out
+
+		cat $temp_file
+
+
 	else
 
 		>&2 echo "Error opening file. Exiting."
