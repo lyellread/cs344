@@ -9,7 +9,7 @@ def create_files():
 
 	for x in range (0,3):
 
-		current_filename = ''.join([random.choice("abcdefghijklmnopqrstuvwxyz") for u in range (0,10)])
+		current_filename = "tmp-" + ''.join([random.choice("abcdefghijklmnopqrstuvwxyz") for u in range (0,10)])
 		filename_list.append(current_filename)
 
 		os.system("touch " + current_filename)
@@ -52,7 +52,6 @@ def print_integers():
 	print(integer_1 * integer_2)
 
 
-print("Started")
 file_list = create_files()
 fill_files(file_list)
 print_integers()
