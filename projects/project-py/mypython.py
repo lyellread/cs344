@@ -32,17 +32,23 @@ def fill_files(filenames):
 
 		print(file_contents)
 
-	
-
-
 
 def print_integers():
 
 	# Print two randints on 1..42 incl
 
-
+		#>>> max([random.randint(1,42) for x in range (0,10000000)])
+		#42
+		#>>> min([random.randint(1,42) for x in range (0,10000000)])
+		#1
 
 	# Print product of two integers above.
+
+	integer_1 = random.randint(1,42)
+	integer_2 = random.randint(1,42)
+
+	print(integer_1, integer_2, integer_1 * integer_2)
+
 
 if __name__ == __main__:
 
