@@ -116,7 +116,7 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 int main(){
 
 	int roomNamesSize = 10;
-	char * roomNames[10];
+	char * roomNames[roomNamesSize];
 	roomNames[0] = "bacon";
 	roomNames[1] = "sweets";
 	roomNames[2] = "toast";
@@ -136,7 +136,19 @@ int main(){
 
 	makeDirectory();
 
+	//pick random rooms and create those files with only the ROOM NAME header present
+
 	createRooms(roomNames, roomNamesSize, chosenRooms);
+
+	//link files already created to one another with the CONNECTION n list.
+
+	linkRooms(chosenRooms);
+
+	//assign ( START_ROOM | MID_ROOM | END_ROOM ) ROOM TYPE to each room.
+
+	typeRooms(chosenRooms);
+
+	//call the Game program?
 
 
 
