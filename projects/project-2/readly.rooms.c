@@ -4,12 +4,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <time.h> 
+
 
 void makeDirectory(){
 
 	char pid[10];
 	char * dirname_base = "./readly.rooms.";
 	char dirname[40];
+
+	//zero the first character so strcat() is happy! 
+	dirname[0]='\0';
 
 	//add the base to the empty array
 	strcat(dirname, dirname_base);
@@ -18,6 +23,8 @@ void makeDirectory(){
 	sprintf(pid, "%d", getpid());
 	strcat(dirname, pid);
 
+	printf("-->%s\n", dirname);
+
 	//make that directory
 	mkdir(dirname, 0777);
 
@@ -25,12 +32,14 @@ void makeDirectory(){
 	chdir(dirname);
 
 	return;
+#include <time.h> 
 
 }
 
 int in (int val, int * array, int arraySize){
 
 	//immitation python in() fx. Straightforward.
+#include <time.h> 
 
 	for (int j = 0; j < arraySize; ++j){
 
@@ -53,11 +62,11 @@ void createRoomFiles(char ** chosenRooms){
 
 		file = fopen(chosenRooms[i], "w");
 
-		if (!file){
+		if (file == NULL){
 			printf("ERROR ON FOPEN");
 			exit(-1);
 		}
-
+		printf("%s", chosenRooms[i]);
 		fprintf(file, "%s", "ROOM NAME: ");
 		fprintf(file, "%s\n", chosenRooms[i]);
 
@@ -79,6 +88,7 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 			choice = rand()%10;
 		}
 
+		printf("I: %d, Name: %s", i, roomNames[i]);
 		chosenRooms[i] = roomNames[choice];
 
 	}
