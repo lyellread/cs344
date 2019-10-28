@@ -32,18 +32,18 @@ void makeDirectory(){
 	chdir(dirname);
 
 	return;
-#include <time.h> 
 
 }
 
 int in (int val, int * array, int arraySize){
 
 	//immitation python in() fx. Straightforward.
-#include <time.h> 
 
 	for (int j = 0; j < arraySize; ++j){
 
 		//if vals are the same, return true its in that array
+		//printf("Comparing %d, %d", val, array[j]);
+
 		if (array[j] == val){
 			return 1;
 		}
@@ -66,7 +66,6 @@ void createRoomFiles(char ** chosenRooms){
 			printf("ERROR ON FOPEN");
 			exit(-1);
 		}
-		printf("%s", chosenRooms[i]);
 		fprintf(file, "%s", "ROOM NAME: ");
 		fprintf(file, "%s\n", chosenRooms[i]);
 
@@ -84,11 +83,12 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
 		int choice = rand()%10;
 
-		while(in(choice, chosen, (i+1))){
+		while(in(choice, chosen, i)){
 			choice = rand()%10;
 		}
 
-		printf("I: %d, Name: %s", i, roomNames[i]);
+		printf("Choice: %d, Name: %s\n", choice, roomNames[choice]);
+		chosen[i] = choice;
 		chosenRooms[i] = roomNames[choice];
 
 	}
