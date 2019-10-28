@@ -58,46 +58,59 @@ void createRoomFiles(char ** chosenRooms){
 
 	FILE * file = NULL;
 
+	//we need 7 rooms....
+
 	for (int i = 0; i < 7; ++i){
+
+		//open that room name (create file + stream)
 
 		file = fopen(chosenRooms[i], "w");
 
 		if (file == NULL){
+			//if error, quit.
 			printf("ERROR ON FOPEN");
 			exit(-1);
 		}
+
+		//add to the top of the file this init data:
 		fprintf(file, "%s", "ROOM NAME: ");
 		fprintf(file, "%s\n", chosenRooms[i]);
 
+		//close that file.
 		fclose(file);
 	}
 
 	return;
 }
 
+
 void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
+	//this will store the past choices so that we dont choose the same 
+	//choice twice
 	int chosen[7];
 
 	for (int i = 0; i < 7; ++i){
 
+		//rand%10 ---> 0..9
 		int choice = rand()%10;
 
+		//enforce random !in chosen
 		while(in(choice, chosen, i)){
 			choice = rand()%10;
 		}
 
-		printf("Choice: %d, Name: %s\n", choice, roomNames[choice]);
+		//printf("Choice: %d, Name: %s\n", choice, roomNames[choice]);
+		//assign name and number fields
 		chosen[i] = choice;
 		chosenRooms[i] = roomNames[choice];
 
 	}
 
+	//call create the room files
 	createRoomFiles(chosenRooms);
 	return;
 }
-
-
 
 
 int main(){
