@@ -130,7 +130,7 @@ int main(){
 
 	char * chosenRooms[7];
 
-	srand(483958847);
+	srand(time(0));
 
 	//create directory && chdir to it
 
