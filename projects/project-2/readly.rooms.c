@@ -32,7 +32,7 @@ int in (int val, int * array, int arraySize){
 
 	//immitation python in() fx. Straightforward.
 
-	for (int j = 0; j < arraySize, ++j){
+	for (int j = 0; j < arraySize; ++j){
 
 		//if vals are the same, return true its in that array
 		if (array[j] == val){
@@ -67,7 +67,7 @@ void createRoomFiles(char ** chosenRooms){
 	return;
 }
 
-void createRooms(roomNames, roomNamesSize, &chosenRooms){
+void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
 	int chosen[7];
 
@@ -107,13 +107,13 @@ int main(){
 
 	char * chosenRooms[7];
 
-	srand(time(0));
+	srand(483958847);
 
 	//create directory && chdir to it
 
 	makeDirectory();
 
-	createRooms();
+	createRooms(roomNames, roomNamesSize, chosenRooms);
 
 
 
