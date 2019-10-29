@@ -164,6 +164,51 @@ void connectTwoRooms (int a, int b, char ** chosenRooms){
 }
 
 
+int indexOf(char * name, char ** chosenRooms){
+
+	for (int i = 0; i < 7; ++i){
+		if (strcmp(name, chosenRooms[i]) == 0){
+			return i;
+		}
+	}
+
+	return -1;
+	exit(-2);
+}
+
+
+
+int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLength){
+
+	int randomRoom = rand()%8;
+	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(randomRoom)){
+		randomRoom = rand()%8;
+	}
+	printf("Settled on room %d as connxn for self room %d\n", randomRoom, self)
+	return randomRoom
+
+}
+
+
+void getConnections(char * filename, int ** array, int * arrayIndex, char ** chosenRooms){
+
+	memset(array, 0, 10);
+	*arrayIndex = 0;
+
+	FILE * file = openFile(filename, 'r');
+	char word[100];
+	while(fscanf(file, " %s", word)){
+
+		if (word == ":"){
+			fscanf(file, "%s", word);
+			*array[*arrayIndex] = indexOf(word, chosenRooms);
+		}
+	}
+
+	return;
+}
+
+
 void linkRooms(char ** chosenRooms){
 
 	//for 4 - existing conections, add random connection if
@@ -171,11 +216,29 @@ void linkRooms(char ** chosenRooms){
 		//not to this same room
 		//connection does not already exist
 
+	int connections;
+	int newConnection;
+	int selfConnections[10]
+	int selfConnectionsLength=0;
+
 	for (int i = 0; i < 7; ++i){
 
+		connections = getNumberOfConnections(chosenRooms[i]);
 
+		if (connections >= 4){
+			printf("Skipping room %d\n", i);
+		}
+		else{
 
+			for (int j = 0; j < (4-connections); ++j){
 
+				getConnections(chosenRooms[i], &selfConnections, &selfConnectionsLength);
+				newConnection = findFreeRoomNotSelf(i, selfConnections, selfConnectionsLength);
+				connectTwoRooms(newConnection, i);
+
+			
+			}
+		}
 	}
 
 	//return
