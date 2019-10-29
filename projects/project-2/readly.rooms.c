@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <time.h> 
 
+//============================= D I R E C T O R Y ===================================//
 
 void makeDirectory(){
 
@@ -54,6 +55,23 @@ int in (int val, int * array, int arraySize){
 	return 0;
 }
 
+FILE * openFile(char * filename, char method){
+
+	FILE * file = fopen(filename, method);
+
+		if (file == NULL){
+			//if error, quit.
+			printf("ERROR ON FOPEN");
+			exit(-1);
+		}
+		else{
+
+			return file;
+		}
+}
+
+//============================= F I L E   C R E A T I O N =================================//
+
 void createRoomFiles(char ** chosenRooms){
 
 	FILE * file = NULL;
@@ -64,13 +82,7 @@ void createRoomFiles(char ** chosenRooms){
 
 		//open that room name (create file + stream)
 
-		file = fopen(chosenRooms[i], "w");
-
-		if (file == NULL){
-			//if error, quit.
-			printf("ERROR ON FOPEN");
-			exit(-1);
-		}
+		file = openFile(chosenRooms[i], 'w');
 
 		//add to the top of the file this init data:
 		fprintf(file, "%s", "ROOM NAME: ");
@@ -113,6 +125,64 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 }
 
 
+//===================================== R O O M   C O N N E C T I O N S ====================================//
+
+int getNumberOfConnections(char * filename){
+
+	FILE * file;
+	char * line;
+	int lineCount = 0;
+	size_t len=0;
+	ssize_t read;
+
+	file = openfile(filename, 'r');
+
+	while ((read = getline(&line, &len, fp)) != -1){
+
+		printf("Got Line\n");
+		++lineCount;
+	}
+	fclose(file);
+	printf("File %s had %d connections", filename, (lineCount-1));
+
+	return (lineCount-1)
+
+}
+
+void connectTwoRooms (int a, int b, char ** chosenRooms){
+
+	FILE * file = openFile(chosenRooms[a], 'a');
+	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[a])+1, chosenRooms[b]);
+	fclose(file);
+
+	FILE * file = openFile(chosenRooms[b], 'a');
+	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[b])+1, chosenRooms[a]);
+	fclose(file);
+
+	return;
+
+}
+
+
+void linkRooms(char ** chosenRooms){
+
+	//for 4 - existing conections, add random connection if
+		//other room can accept
+		//not to this same room
+		//connection does not already exist
+
+	for (int i = 0; i < 7; ++i){
+
+
+
+
+	}
+
+	//return
+	return;
+
+}
+
 int main(){
 
 	int roomNamesSize = 10;
@@ -146,7 +216,7 @@ int main(){
 
 	//assign ( START_ROOM | MID_ROOM | END_ROOM ) ROOM TYPE to each room.
 
-	typeRooms(chosenRooms);
+	//typeRooms(chosenRooms);
 
 	//call the Game program?
 
