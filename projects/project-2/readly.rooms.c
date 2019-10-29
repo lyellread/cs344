@@ -55,7 +55,8 @@ int in (int val, int * array, int arraySize){
 	return 0;
 }
 
-FILE * openFile(char * filename, char method){
+FILE * openFile(char * filename, char * method){
+
 
 	FILE * file = fopen(filename, method);
 
@@ -65,7 +66,6 @@ FILE * openFile(char * filename, char method){
 			exit(-1);
 		}
 		else{
-
 			return file;
 		}
 }
@@ -81,8 +81,7 @@ void createRoomFiles(char ** chosenRooms){
 	for (int i = 0; i < 7; ++i){
 
 		//open that room name (create file + stream)
-
-		file = openFile(chosenRooms[i], 'w');
+		file = openFile(chosenRooms[i], (char *)"w");
 
 		//add to the top of the file this init data:
 		fprintf(file, "%s", "ROOM NAME: ");
@@ -129,33 +128,38 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
 int getNumberOfConnections(char * filename){
 
-	FILE * file;
-	char * line;
-	int lineCount = 0;
-	size_t len=0;
-	ssize_t read;
+	FILE * file = fopen(filename, "r");
+	int lines = 1;
+	char c;
 
-	file = openfile(filename, 'r');
-
-	while ((read = getline(&line, &len, fp)) != -1){
-
-		printf("Got Line\n");
-		++lineCount;
+	if (file == NULL){
+		//if error, quit.
+		printf("ERROR ON FOPEN");
+		exit(-1);
 	}
-	fclose(file);
-	printf("File %s had %d connections", filename, (lineCount-1));
 
-	return (lineCount-1)
 
+	// for (c = getc(file); c != EOF; c = getc(file)) {
+	// 	printf("  checking char: %c\n", c);
+	// 	if (c == '\n') {
+	// 		lines = lines + 1;
+	// 	}
+
+	// }
+
+
+	printf("Lines: %i", lines);
+
+	return lines;
 }
 
 void connectTwoRooms (int a, int b, char ** chosenRooms){
 
-	FILE * file = openFile(chosenRooms[a], 'a');
+	FILE * file = openFile(chosenRooms[a], (char *)"a");
 	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[a])+1, chosenRooms[b]);
 	fclose(file);
 
-	FILE * file = openFile(chosenRooms[b], 'a');
+	file = openFile(chosenRooms[b], (char *)"a");
 	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[b])+1, chosenRooms[a]);
 	fclose(file);
 
@@ -178,33 +182,33 @@ int indexOf(char * name, char ** chosenRooms){
 
 
 
-int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLength){
+int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLength, char ** chosenRooms){
 
 	int randomRoom = rand()%8;
-	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(randomRoom)){
+	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(chosenRooms[randomRoom])){
 		randomRoom = rand()%8;
 	}
-	printf("Settled on room %d as connxn for self room %d\n", randomRoom, self)
-	return randomRoom
+	printf("Settled on room %d as connxn for self room %d\n", randomRoom, self);
+	return randomRoom;
 
 }
 
 
-void getConnections(char * filename, int ** array, int * arrayIndex, char ** chosenRooms){
+void getConnections(char * filename, int * array, int * arrayIndex, char ** chosenRooms){
 
 	memset(array, 0, 10);
 	*arrayIndex = 0;
 
-	FILE * file = openFile(filename, 'r');
+	FILE * file = openFile(filename, (char *)"r");
 	char word[100];
 	while(fscanf(file, " %s", word)){
 
-		if (word == ":"){
+		if (strcmp(word, ":") == 0){
 			fscanf(file, "%s", word);
-			*array[*arrayIndex] = indexOf(word, chosenRooms);
+			array[*arrayIndex] = indexOf(word, chosenRooms);
 		}
 	}
-
+	fclose(file);
 	return;
 }
 
@@ -218,7 +222,7 @@ void linkRooms(char ** chosenRooms){
 
 	int connections;
 	int newConnection;
-	int selfConnections[10]
+	int selfConnections[10];
 	int selfConnectionsLength=0;
 
 	for (int i = 0; i < 7; ++i){
@@ -232,9 +236,9 @@ void linkRooms(char ** chosenRooms){
 
 			for (int j = 0; j < (4-connections); ++j){
 
-				getConnections(chosenRooms[i], &selfConnections, &selfConnectionsLength);
-				newConnection = findFreeRoomNotSelf(i, selfConnections, selfConnectionsLength);
-				connectTwoRooms(newConnection, i);
+				getConnections(chosenRooms[i], selfConnections, &selfConnectionsLength, chosenRooms);
+				newConnection = findFreeRoomNotSelf(i, selfConnections, selfConnectionsLength, chosenRooms);
+				connectTwoRooms(newConnection, i, chosenRooms);
 
 			
 			}
