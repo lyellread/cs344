@@ -38,9 +38,10 @@ void makeDirectory(){
 
 int in (int val, int * array, int arraySize){
 
+	int j;
 	//immitation python in() fx. Straightforward.
 
-	for (int j = 0; j < arraySize; ++j){
+	for (j = 0; j < arraySize; ++j){
 
 		//if vals are the same, return true its in that array
 		//printf("Comparing %d, %d", val, array[j]);
@@ -75,10 +76,11 @@ FILE * openFile(char * filename, char * method){
 void createRoomFiles(char ** chosenRooms){
 
 	FILE * file = NULL;
+	int i;
 
 	//we need 7 rooms....
 
-	for (int i = 0; i < 7; ++i){
+	for (i = 0; i < 7; ++i){
 
 		//open that room name (create file + stream)
 		file = openFile(chosenRooms[i], (char *)"w");
@@ -100,8 +102,9 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 	//this will store the past choices so that we dont choose the same 
 	//choice twice
 	int chosen[7];
+	int i;
 
-	for (int i = 0; i < 7; ++i){
+	for (i = 0; i < 7; ++i){
 
 		//rand%10 ---> 0..9
 		int choice = rand()%10;
@@ -139,13 +142,13 @@ int getNumberOfConnections(char * filename){
 	}
 
 
-	// for (c = getc(file); c != EOF; c = getc(file)) {
-	// 	printf("  checking char: %c\n", c);
-	// 	if (c == '\n') {
-	// 		lines = lines + 1;
-	// 	}
+	for (c = getc(file); c != EOF; c = getc(file)) {
+		printf("  checking char: %c\n", c);
+		if (c == '\n') {
+			lines = lines + 1;
+		}
 
-	// }
+	}
 
 
 	printf("Lines: %i", lines);
@@ -170,7 +173,9 @@ void connectTwoRooms (int a, int b, char ** chosenRooms){
 
 int indexOf(char * name, char ** chosenRooms){
 
-	for (int i = 0; i < 7; ++i){
+	int i;
+
+	for (i = 0; i < 7; ++i){
 		if (strcmp(name, chosenRooms[i]) == 0){
 			return i;
 		}
@@ -224,8 +229,9 @@ void linkRooms(char ** chosenRooms){
 	int newConnection;
 	int selfConnections[10];
 	int selfConnectionsLength=0;
+	int i, j;
 
-	for (int i = 0; i < 7; ++i){
+	for (i = 0; i < 7; ++i){
 
 		connections = getNumberOfConnections(chosenRooms[i]);
 
@@ -234,7 +240,7 @@ void linkRooms(char ** chosenRooms){
 		}
 		else{
 
-			for (int j = 0; j < (4-connections); ++j){
+			for (j = 0; j < (4-connections); ++j){
 
 				getConnections(chosenRooms[i], selfConnections, &selfConnectionsLength, chosenRooms);
 				newConnection = findFreeRoomNotSelf(i, selfConnections, selfConnectionsLength, chosenRooms);
