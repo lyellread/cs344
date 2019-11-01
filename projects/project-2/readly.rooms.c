@@ -7,7 +7,9 @@
 #include <time.h> 
 #include <errno.h>
 
+
 //============================= D I R E C T O R Y ===================================//
+
 
 void makeDirectory(){
 
@@ -34,8 +36,8 @@ void makeDirectory(){
 	chdir(dirname);
 
 	return;
-
 }
+
 
 int in (int val, int * array, int arraySize){
 
@@ -57,6 +59,7 @@ int in (int val, int * array, int arraySize){
 	return 0;
 }
 
+
 FILE * openFile(char * filename, char * method){
 
 	//printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
@@ -74,7 +77,9 @@ FILE * openFile(char * filename, char * method){
 		}
 }
 
+
 //============================= F I L E   C R E A T I O N =================================//
+
 
 void createRoomFiles(char ** chosenRooms){
 
@@ -132,6 +137,7 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
 //===================================== R O O M   C O N N E C T I O N S ====================================//
 
+
 int getNumberOfConnections(char * filename){
 
 	//printf("====== Finding how many connections exist in file: %s\n", filename);
@@ -160,6 +166,7 @@ int getNumberOfConnections(char * filename){
 	return (lines-1);
 }
 
+
 void connectTwoRooms (int a, int b, char ** chosenRooms){
 
 	//printf("\n==== Connecting rooms %d and %d.", a, b);
@@ -174,7 +181,6 @@ void connectTwoRooms (int a, int b, char ** chosenRooms){
 	fclose(file);
 
 	return;
-
 }
 
 
@@ -194,7 +200,6 @@ int indexOf(char * name, char ** chosenRooms){
 }
 
 
-
 int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLength, char ** chosenRooms){
 
 	//printf("=== Called find room. Self: %d, self connections #: %d\n", self, selfConnectionsLength);
@@ -210,8 +215,8 @@ int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLeng
 	}
 	//printf("*=> Settled on room %d (connections: %d)\n", randomRoom, getNumberOfConnections(chosenRooms[randomRoom]));
 	return randomRoom;
-
 }
+
 
 void printConnections(char * filename, int * array, int arrayIndex, char ** chosenRooms){
 
@@ -227,7 +232,6 @@ void printConnections(char * filename, int * array, int arrayIndex, char ** chos
 
 	printf("====== END\n");
 	return;
-
 }
 
 
@@ -359,8 +363,8 @@ void typeRooms(char ** chosenRooms){
 			fclose(file);
 		}
 	}
-
 }
+
 
 int main(){
 
@@ -397,5 +401,4 @@ int main(){
 	typeRooms(chosenRooms);
 
 	//call the Game program?
-
 }
