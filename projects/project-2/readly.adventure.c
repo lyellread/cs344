@@ -12,11 +12,33 @@
 struct connectionsStruct{
 	char connections [6][10];
 	int count;
-}
+};
 
 
 
 //===================== S U P P O R T I N G   F U N C T I O N S =======================//
+
+
+int in (char * val, struct connectionsStruct * currentConnections ){
+
+	int j;
+	//immitation python in() fx. Straightforward.
+
+	for (j = 0; j < currentConnections->count; ++j){
+
+		//if vals are the same, return true its in that array
+		//printf("Comparing %d, %d", val, array[j]);
+
+		if (strcmp(currentConnections->connections[j], val) == 0){
+			return 1;
+		}
+
+	}
+
+	//not found - return false its not in that array.
+	return 0;
+}
+
 
 FILE * openFile(char * filename, char * method){
 
@@ -134,11 +156,19 @@ void findRoomOfType(char * room, char * type){
 	}
 
 	closedir(cd);
-	
 	return;
 }
 
 void getCurrentConnections(char * currentRoom, struct connectionsStruct * currentConnections){
+
+	FILE * file;
+	char * line = NULL;
+	char * token;
+	size_t len = 0;
+	ssize_t read;
+
+	memset(currentConnections->connections, 0, sizeof(currentConnections->connections[0][0] * 60));
+	currentConnections->count = 0;
 
 	file = openFile(currentRoom, (char *)"r");
 
@@ -169,22 +199,18 @@ void getCurrentConnections(char * currentRoom, struct connectionsStruct * curren
 void printCurrentConnections(struct connectionsStruct * currentConnections){
 
 	int i;
-	for (i = 0; i < (currentConnections->count-1), ++i){ //print all but the last one separated by ","
+	for (i = 0; i < (currentConnections->count-1); ++i){ //print all but the last one separated by ","
 
 		printf("%s, ", currentConnections->connections[i]);
 
 	}
-	printf("%s.", currentConnections->connections[currentConnections->count-1]);
-
+	printf("%s.\n", currentConnections->connections[currentConnections->count-1]);
 	return;
 }
 
-void prompt(char * currentRoom){
-	struct connectionsStruct * currentConnections;
-	memset(currentConnections->connections, 0, sizeof(currentConnections->connections));
-	currentConnections->count = 0;
-
-	printf("CURRENT LOCATION: %s\n", currentRoom);
+void prompt(char * currentRoom, struct connectionsStruct * currentConnections){
+	
+	printf("\nCURRENT LOCATION: %s\n", currentRoom);
 	getCurrentConnections(currentRoom, currentConnections);
 	printf("POSSIBLE CONNECTIONS: ");
 	printCurrentConnections(currentConnections);
@@ -206,8 +232,25 @@ int winCheck (char * currentRoom){
 	return 0;
 }
 
-void input(char * currentRoom){
-	continue;
+void input(char * currentRoom, struct connectionsStruct * currentConnections){
+	
+	char newRoom[10];
+	//seek user input
+	scanf("%9s", newRoom);
+	while ( !(in(newRoom, currentConnections)) && !(strcmp(newRoom, "time") == 0)){
+		printf("\nHUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+		prompt(currentRoom, currentConnections);
+		scanf("%9s", newRoom);
+	}
+
+	if (strcmp(newRoom, "time") == 0){
+		//time()
+		return;
+	}
+
+	strcpy(currentRoom, newRoom);
+	return;
+
 }
 
 
@@ -215,30 +258,59 @@ void input(char * currentRoom){
 
 void game(char * startRoom){
 
-	printf("==>> GAME CALLED STARTING AT: %s\n", startRoom)
+	printf("==>> GAME CALLED STARTING AT: %s\n", startRoom);
 
 	char path[1000][10];
 	memset(path, 0, sizeof(path));
-	int steps = 0;
 	char currentRoom[10];
 	memset(currentRoom, 0, sizeof(currentRoom));
 	int winState = 0;
+	int steps = 0;
+	int k;
+
+	//printf("It's not the first set of declarations, I guess ;)");
+	//fflush(stdout);
+
+	struct connectionsStruct currentConnections[1];
+	memset(currentConnections->connections, 0, sizeof(currentConnections->connections[0][0] * 60));
+	currentConnections->count = 0;
 
 	strcpy (currentRoom, startRoom);
-
+	strcpy (path[steps], startRoom);
+	steps++;
 
 	while (winState != 1){
 
 		//print out the prompt and such with current room
-		prompt(currentRoom);
+		//printf("[game] Started prompt\n");
+		prompt(currentRoom, currentConnections);
+		//printf("[game] Finished prompt\n");
 
 		//seek the input and check it, and store next room in currentroom, or call the time function
-		input(currentRoom);
+		//printf("[game] Started input\n");
+		input(currentRoom, currentConnections);
+		//printf("[game] Finished input\n");
+
+		strcpy (path[steps], currentRoom);
+		steps++;
+
 
 		//check if this room is the win condition. will print & quit if win reached
+		//printf("[game] Started winCheck\n");
 		winState = winCheck(currentRoom);
+		//printf("[game] finished winCheck\n");
+
 
 	}
+
+	printf("\nYOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n");
+	printf("YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n", steps );
+
+	for (k = 0; k < steps; ++k){
+		printf("%s\n", path[k]);
+	}
+
+	exit(0);
 
 }
 
