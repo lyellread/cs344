@@ -7,13 +7,16 @@
 #include <time.h> 
 #include <errno.h>
 #include <dirent.h>
+#include <pthread.h>
 
+
+pthread_t thread[1];
+pthread_mutex_t lock;
 
 struct connectionsStruct{
 	char connections [6][10];
 	int count;
 };
-
 
 
 //===================== S U P P O R T I N G   F U N C T I O N S =======================//
@@ -219,6 +222,20 @@ void prompt(char * currentRoom, struct connectionsStruct * currentConnections){
 }
 
 
+void * timeToFile(){
+
+		//wait for lock
+		pthread_mutex_lock(&lock);
+
+		printf("YO TIME TO FILE HERE");
+
+		//unlock, then wait a sec
+		pthread_mutex_unlock(&lock);
+
+		return NULL;
+
+}
+
 int winCheck (char * currentRoom){
 
 	char winRoom[10];
@@ -244,8 +261,14 @@ void input(char * currentRoom, struct connectionsStruct * currentConnections){
 	}
 
 	if (strcmp(newRoom, "time") == 0){
-		//time()
-		return;
+		//unlock
+		pthread_mutex_unlock(&lock);
+
+		//wait till lock again
+		pthread_mutex_lock(&lock);
+
+		//seek next round of input. I know its recursive - it'll all be fine i hope...
+		input(currentRoom, currentConnections);
 	}
 
 	strcpy(currentRoom, newRoom);
@@ -266,7 +289,19 @@ void game(char * startRoom){
 	memset(currentRoom, 0, sizeof(currentRoom));
 	int winState = 0;
 	int steps = 0;
-	int k;
+	int k, err;
+
+	if (pthread_mutex_init(&lock, NULL) != 0){
+		printf("ERROR: MUTEX INIT FAILED\n");
+	}
+
+	pthread_mutex_lock(&lock);
+
+	err = pthread_create(thread, NULL, &timeToFile, NULL);
+	if (err != 0){
+		printf("ERROR: THREAD CREATION FAILED");
+	}
+
 
 	//printf("It's not the first set of declarations, I guess ;)");
 	//fflush(stdout);
@@ -276,8 +311,10 @@ void game(char * startRoom){
 	currentConnections->count = 0;
 
 	strcpy (currentRoom, startRoom);
-	strcpy (path[steps], startRoom);
-	steps++;
+	
+	//first room does not count because rules lol.
+	//strcpy (path[steps], startRoom);
+	//steps++;
 
 	while (winState != 1){
 
@@ -304,7 +341,7 @@ void game(char * startRoom){
 	}
 
 	printf("\nYOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n");
-	printf("YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n", steps );
+	printf("YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n", steps);
 
 	for (k = 0; k < steps; ++k){
 		printf("%s\n", path[k]);
