@@ -11,9 +11,9 @@ clean:
 
 a:
 	make all
-g: readly.game.c
+g: readly.adventure.c
 	make game
-r: readly.rooms.c
+r: readly.buildrooms.c
 	make rooms
 c:
 	make clean
