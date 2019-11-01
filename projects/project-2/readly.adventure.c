@@ -8,11 +8,15 @@
 #include <errno.h>
 #include <dirent.h>
 #include <pthread.h>
+#include <assert.h>
 
 
+//define variables assoc with our mutex
 pthread_t thread[1];
 pthread_mutex_t lock;
 
+
+//define a struct to hold the current connections.
 struct connectionsStruct{
 	char connections [6][10];
 	int count;
@@ -60,6 +64,7 @@ FILE * openFile(char * filename, char * method){
 		}
 }
 
+
 void findDirecrory(char * directoryName){
 
 	//some help from https://stackoverflow.com/questions/42170824/use-stat-to-get-most-recently-modified-directory (and man page)
@@ -102,6 +107,7 @@ void findDirecrory(char * directoryName){
 	return;
 }
 
+
 void findRoomOfType(char * room, char * type){
 
 	//some help from https://stackoverflow.com/questions/42170824/use-stat-to-get-most-recently-modified-directory (and man page)
@@ -114,8 +120,10 @@ void findRoomOfType(char * room, char * type){
 	size_t len = 0;
 	ssize_t read;
 
+	//open cd
 	cd = opendir(".");
 
+	//read all items
 	while ((item = readdir(cd))){
 
 		//printf("Iterating over %s\n", item->d_name);
@@ -162,6 +170,7 @@ void findRoomOfType(char * room, char * type){
 	return;
 }
 
+
 void getCurrentConnections(char * currentRoom, struct connectionsStruct * currentConnections){
 
 	FILE * file;
@@ -183,6 +192,7 @@ void getCurrentConnections(char * currentRoom, struct connectionsStruct * curren
 		token = strtok (line, ": \n");
 		while (token != NULL){
 			
+			//if we have a connection line
 			if (strcmp(token, "CONNECTION") == 0){
 				token = strtok (NULL, ": \n"); //get rid of int
 				token = strtok (NULL, ": \n"); //store the connection dest in token
@@ -199,20 +209,27 @@ void getCurrentConnections(char * currentRoom, struct connectionsStruct * curren
 	fclose(file);
 }
 
+
 void printCurrentConnections(struct connectionsStruct * currentConnections){
 
 	int i;
+
+	//for each connection in the struct except the last, print it followed by a colon
 	for (i = 0; i < (currentConnections->count-1); ++i){ //print all but the last one separated by ","
 
 		printf("%s, ", currentConnections->connections[i]);
 
 	}
+
+	//print hte last one with that colon-boi
 	printf("%s.\n", currentConnections->connections[currentConnections->count-1]);
 	return;
 }
 
+
 void prompt(char * currentRoom, struct connectionsStruct * currentConnections){
 	
+	//print out the prompt, and leave next char to write at the ">" so that fgets in imput() can get it from there
 	printf("\nCURRENT LOCATION: %s\n", currentRoom);
 	getCurrentConnections(currentRoom, currentConnections);
 	printf("POSSIBLE CONNECTIONS: ");
@@ -224,92 +241,135 @@ void prompt(char * currentRoom, struct connectionsStruct * currentConnections){
 
 void * timeToFile(){
 
-		//wait for lock
+	FILE * file;
+	time_t timeNow;
+	struct tm * currentTime;
+	char output[200];
+
+
+	//always restart
+	while(1){
+		//wait for lock, when we can lock that means we wanna write time to file
 		pthread_mutex_lock(&lock);
 
-		printf("YO TIME TO FILE HERE");
+		//timeNow = time(0);
+		time(&timeNow);
+		currentTime = localtime(&timeNow);
+
+		//print that nicely formatted time
+		strftime(output, 200, " %l:%M%p, %A, %B %d, %Y", currentTime);
+		
+		//open the output file in the parent dir (because rules lol).
+		file = openFile("../currentTime.txt", "w");
+		fprintf(file, "%s\n", output);
+		fclose(file);
 
 		//unlock, then wait a sec
 		pthread_mutex_unlock(&lock);
-
-		return NULL;
-
+		sleep(1);
+	}
 }
+
 
 int winCheck (char * currentRoom){
 
 	char winRoom[10];
+	//zero the winroom array. whatever.
 	memset(winRoom, 0, sizeof(winRoom));
 
+	//get the end room
 	findRoomOfType(winRoom, "END_ROOM");
 
+	//if we are in the end room, then we've won.
 	if (strcmp(currentRoom, winRoom) == 0){
 		return 1;
 	}
 	return 0;
 }
 
-void input(char * currentRoom, struct connectionsStruct * currentConnections){
+
+int input(char * currentRoom, struct connectionsStruct * currentConnections){
 	
 	char newRoom[10];
 	//seek user input
+
+	//read of length max 9.
 	scanf("%9s", newRoom);
+
+	//repeat until we get valid input
 	while ( !(in(newRoom, currentConnections)) && !(strcmp(newRoom, "time") == 0)){
 		printf("\nHUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
 		prompt(currentRoom, currentConnections);
 		scanf("%9s", newRoom);
 	}
 
+	//if we have a time request, return 1 so game() can catch this and do a time.
 	if (strcmp(newRoom, "time") == 0){
-		//unlock
-		pthread_mutex_unlock(&lock);
-
-		//wait till lock again
-		pthread_mutex_lock(&lock);
-
-		//seek next round of input. I know its recursive - it'll all be fine i hope...
-		input(currentRoom, currentConnections);
+		return 1;
 	}
 
+	//otherwise, copy the new room into currentRoom.
 	strcpy(currentRoom, newRoom);
-	return;
+	return 0;
+}
 
+
+void printDate(FILE * file){
+
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
+
+	//read from the provided file, and only get the first line
+	read = getline(&line, &len, file);
+
+	//read error... not that there should be one, unless someone removes the contents
+	//of the file.
+	assert(read!=-1);
+
+	//print that line.
+	printf("\n%s", line);
+	return;
 }
 
 
 //=============================== G A M E =================================//
 
+
 void game(char * startRoom){
 
-	printf("==>> GAME CALLED STARTING AT: %s\n", startRoom);
+	//printf("==>> GAME CALLED STARTING AT: %s\n", startRoom);
 
+	//variable definitions
 	char path[1000][10];
+	FILE * file;
 	memset(path, 0, sizeof(path));
 	char currentRoom[10];
 	memset(currentRoom, 0, sizeof(currentRoom));
 	int winState = 0;
 	int steps = 0;
-	int k, err;
+	int k, err, ret;
 
+	//create a mutex
 	if (pthread_mutex_init(&lock, NULL) != 0){
 		printf("ERROR: MUTEX INIT FAILED\n");
 	}
 
+	//grab lock on that mutex
 	pthread_mutex_lock(&lock);
 
-	err = pthread_create(thread, NULL, &timeToFile, NULL);
+	//create a thread of timeToFile()
+	err = pthread_create(&thread[0], NULL, &timeToFile, NULL);
 	if (err != 0){
 		printf("ERROR: THREAD CREATION FAILED");
 	}
 
-
-	//printf("It's not the first set of declarations, I guess ;)");
-	//fflush(stdout);
-
+	//zero the struct of connections
 	struct connectionsStruct currentConnections[1];
 	memset(currentConnections->connections, 0, sizeof(currentConnections->connections[0][0] * 60));
 	currentConnections->count = 0;
 
+	//move current (start) room into currentRoom
 	strcpy (currentRoom, startRoom);
 	
 	//first room does not count because rules lol.
@@ -318,48 +378,63 @@ void game(char * startRoom){
 
 	while (winState != 1){
 
-		//print out the prompt and such with current room
-		//printf("[game] Started prompt\n");
+		//prompt the user
 		prompt(currentRoom, currentConnections);
-		//printf("[game] Finished prompt\n");
 
 		//seek the input and check it, and store next room in currentroom, or call the time function
-		//printf("[game] Started input\n");
-		input(currentRoom, currentConnections);
-		//printf("[game] Finished input\n");
+		ret = input(currentRoom, currentConnections);
+		while (ret == 1){
+			//unlock 
+			pthread_mutex_unlock(&lock);
 
+			// printf("[input] UNLOCKED\n");
+			// fflush(stdout);
+
+			sleep(0.5);
+
+			//wait till lock again
+			pthread_mutex_lock(&lock);
+
+			file = openFile("../currentTime.txt", "r");
+			printDate(file);
+			fclose(file);
+
+
+			// printf("[input] LOCKED\n");
+			// fflush(stdout);
+
+			//seek next round of input. I know its recursive - it'll all be fine i hope...
+			prompt(currentRoom, currentConnections);
+
+			//update what the user wants to do next
+			ret = input(currentRoom, currentConnections);
+
+		}
+
+		//update path and len(path) == steps
 		strcpy (path[steps], currentRoom);
 		steps++;
 
-
 		//check if this room is the win condition. will print & quit if win reached
-		//printf("[game] Started winCheck\n");
 		winState = winCheck(currentRoom);
-		//printf("[game] finished winCheck\n");
-
-
 	}
 
+	//we have won.
 	printf("\nYOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n");
 	printf("YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n", steps);
 
+	//print those steps taken
 	for (k = 0; k < steps; ++k){
 		printf("%s\n", path[k]);
 	}
 
+	//proper exit code yeet
 	exit(0);
-
 }
 
 
-
-
-
-
-
-
-
 //================================ M A I N =================================//
+
 
 int main() {
 
@@ -379,6 +454,4 @@ int main() {
 
 	//run the game with that start room as the initial room
 	game(startRoom);
-
-
 }
