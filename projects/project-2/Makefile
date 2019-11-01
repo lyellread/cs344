@@ -1,17 +1,25 @@
 all:
-	@echo "Choose"
-g: readly.game.c
-	make clean && gcc -o readly.adventure -Wall readly.adventure.c -lpthread
-r: readly.rooms.c
-	make clean && gcc -o readly.rooms -Wall readly.rooms.c -lpthread
-c:
+	make clean && make rooms_base && make game_base
+game: readly.adventure.c
+	make clean && make game_base
+rooms: readly.buildrooms.c
+	make clean && make rooms_base
+clean:
 	rm -rf ./readly.rooms.??*
 
 #abbreviations cause im lazy :)
 
-game: readly.game.c
-	make g
-rooms: readly.rooms.c
-	make r
-clean:
-	make c
+a:
+	make all
+g: readly.game.c
+	make game
+r: readly.rooms.c
+	make rooms
+c:
+	make clean
+
+
+game_base: readly.adventure.c
+	gcc -o readly.adventure -Wall readly.adventure.c -lpthread
+rooms_base: readly.buildrooms.c
+	gcc -o readly.buildrooms -Wall readly.buildrooms.c -lpthread
