@@ -8,6 +8,14 @@
 #include <errno.h>
 #include <dirent.h>
 
+
+struct connectionsStruct{
+	char connections [6][10];
+	int count;
+}
+
+
+
 //===================== S U P P O R T I N G   F U N C T I O N S =======================//
 
 FILE * openFile(char * filename, char * method){
@@ -69,7 +77,7 @@ void findDirecrory(char * directoryName){
 	return;
 }
 
-void findStartRoom(char * startRoom){
+void findRoomOfType(char * room, char * type){
 
 	//some help from https://stackoverflow.com/questions/42170824/use-stat-to-get-most-recently-modified-directory (and man page)
 	struct stat currentStat;
@@ -109,9 +117,9 @@ void findStartRoom(char * startRoom){
 				token = strtok (line, ": \n");
 				while (token != NULL){
 					
-					if (strcmp(token, "START_ROOM") == 0){
-						printf("START FOUND: %s -- %s\n", item->d_name, token);
-						strcpy(startRoom, item->d_name);
+					if (strcmp(token, type) == 0){
+						//printf("START FOUND: %s -- %s\n", item->d_name, token);
+						strcpy(room, item->d_name);
 						fclose(file);
 						return;
 
@@ -130,18 +138,107 @@ void findStartRoom(char * startRoom){
 	return;
 }
 
+void getCurrentConnections(char * currentRoom, struct connectionsStruct * currentConnections){
+
+	file = openFile(currentRoom, (char *)"r");
+
+	//read it line by line ...
+	while ((read = getline(&line, &len, file)) != -1){
+		//printf("Line: %s\n", line);
+
+		//... parse before and after : inclusive-or ' ' with strtok
+		token = strtok (line, ": \n");
+		while (token != NULL){
+			
+			if (strcmp(token, "CONNECTION") == 0){
+				token = strtok (NULL, ": \n"); //get rid of int
+				token = strtok (NULL, ": \n"); //store the connection dest in token
+
+				strcpy(currentConnections->connections[currentConnections->count], token);
+				currentConnections->count++;
+
+			}
+
+			//get next word
+			token = strtok (NULL, ": \n");	
+		}
+	}
+	fclose(file);
+}
+
+void printCurrentConnections(struct connectionsStruct * currentConnections){
+
+	int i;
+	for (i = 0; i < (currentConnections->count-1), ++i){ //print all but the last one separated by ","
+
+		printf("%s, ", currentConnections->connections[i]);
+
+	}
+	printf("%s.", currentConnections->connections[currentConnections->count-1]);
+
+	return;
+}
+
+void prompt(char * currentRoom){
+	struct connectionsStruct * currentConnections;
+	memset(currentConnections->connections, 0, sizeof(currentConnections->connections));
+	currentConnections->count = 0;
+
+	printf("CURRENT LOCATION: %s\n", currentRoom);
+	getCurrentConnections(currentRoom, currentConnections);
+	printf("POSSIBLE CONNECTIONS: ");
+	printCurrentConnections(currentConnections);
+	printf("WHERE TO? >");
+	return;
+}
 
 
+int winCheck (char * currentRoom){
 
+	char winRoom[10];
+	memset(winRoom, 0, sizeof(winRoom));
 
+	findRoomOfType(winRoom, "END_ROOM");
 
+	if (strcmp(currentRoom, winRoom) == 0){
+		return 1;
+	}
+	return 0;
+}
+
+void input(char * currentRoom){
+	continue;
+}
 
 
 //=============================== G A M E =================================//
 
 void game(char * startRoom){
 
-	printf("==>> GAME CALLED STARTING AT: %s\n", startRoom);
+	printf("==>> GAME CALLED STARTING AT: %s\n", startRoom)
+
+	char path[1000][10];
+	memset(path, 0, sizeof(path));
+	int steps = 0;
+	char currentRoom[10];
+	memset(currentRoom, 0, sizeof(currentRoom));
+	int winState = 0;
+
+	strcpy (currentRoom, startRoom);
+
+
+	while (winState != 1){
+
+		//print out the prompt and such with current room
+		prompt(currentRoom);
+
+		//seek the input and check it, and store next room in currentroom, or call the time function
+		input(currentRoom);
+
+		//check if this room is the win condition. will print & quit if win reached
+		winState = winCheck(currentRoom);
+
+	}
 
 }
 
@@ -169,11 +266,10 @@ int main() {
 	chdir(directoryName);
 
 	//Find the text file that is designated start_room
-	findStartRoom(startRoom);
-	printf("Start Room Returned as: %s\n", startRoom);
+	findRoomOfType(startRoom, "START_ROOM");
 
 	//run the game with that start room as the initial room
-	//game(startRoom)
+	game(startRoom);
 
 
 }
