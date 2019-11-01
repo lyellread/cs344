@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <time.h> 
+#include <errno.h>
 
 //============================= D I R E C T O R Y ===================================//
 
@@ -24,7 +25,7 @@ void makeDirectory(){
 	sprintf(pid, "%d", getpid());
 	strcat(dirname, pid);
 
-	printf("-->%s\n", dirname);
+	//printf("-->%s\n", dirname);
 
 	//make that directory
 	mkdir(dirname, 0777);
@@ -58,16 +59,17 @@ int in (int val, int * array, int arraySize){
 
 FILE * openFile(char * filename, char * method){
 
-	printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
-
+	//printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
+	errno = 0;
 	FILE * file = fopen(filename, method);
 
 		if (file == NULL){
 			//if error, quit.
-			printf("ERROR ON FOPEN");
+			//printf("ERROR ON FOPEN, ERRNO: %d\n", errno);
 			exit(-1);
 		}
 		else{
+			//printf("[FOPEN: FD: %d]\n", fileno(file));
 			return file;
 		}
 }
@@ -132,7 +134,7 @@ void createRooms(char ** roomNames, int roomNamesSize, char ** chosenRooms){
 
 int getNumberOfConnections(char * filename){
 
-	printf("====== Finding how many connections exist in file: %s\n", filename);
+	//printf("====== Finding how many connections exist in file: %s\n", filename);
 
 	FILE * file;
 	int lines = 0;
@@ -149,14 +151,14 @@ int getNumberOfConnections(char * filename){
 	}
 
 
-	printf("*===== Connections in file %s: %i\n",filename, (lines-1));
-
+	//printf("*===== Connections in file %s: %i\n",filename, (lines-1));
+	fclose(file);
 	return (lines-1);
 }
 
 void connectTwoRooms (int a, int b, char ** chosenRooms){
 
-	printf("\n==== Connecting rooms %d and %d.", a, b);
+	//printf("\n==== Connecting rooms %d and %d.", a, b);
 
 	FILE * file = openFile(chosenRooms[a], (char *)"a");
 	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[a])+1, chosenRooms[b]);
@@ -188,16 +190,17 @@ int indexOf(char * name, char ** chosenRooms){
 
 int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLength, char ** chosenRooms){
 
-	printf("=== Called find room. Self: %d, self connections #: %d\n", self, selfConnectionsLength);
+	//printf("=== Called find room. Self: %d, self connections #: %d\n", self, selfConnectionsLength);
 
-	int randomRoom = rand()%8;
-	printf("*== Room Rand: %d : %s\n", randomRoom, chosenRooms[randomRoom]);
+	int randomRoom = rand()%7;
+	//printf("*== Room Rand: %d\n", randomRoom);
 
-	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(chosenRooms[randomRoom])){
-		randomRoom = rand()%8;
-		printf("*== Room Rand: %d : %s\n", randomRoom, chosenRooms[randomRoom]);
+	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(chosenRooms[randomRoom]) > 6 ){
+		randomRoom = rand()%7;
+		//printf("*== Room Rand: %d : %s\n", randomRoom, chosenRooms[randomRoom]);
+		//printf("*== Room Rand: %d\n", randomRoom);
 	}
-	printf("*=> Settled on room %d (connections: %d)\n", randomRoom, getNumberOfConnections(chosenRooms[randomRoom]));
+	//printf("*=> Settled on room %d (connections: %d)\n", randomRoom, getNumberOfConnections(chosenRooms[randomRoom]));
 	return randomRoom;
 
 }
@@ -210,7 +213,7 @@ void printConnections(char * filename, int * array, int arrayIndex, char ** chos
 
 	for (i = 0; i < arrayIndex; ++i){
 
-		printf("*======= Connects to: %s\n", chosenRooms[array[i]]);
+		printf("*===== Connects to: %s\n", chosenRooms[array[i]]);
 	}
 
 	printf("====== END\n");
@@ -221,7 +224,7 @@ void printConnections(char * filename, int * array, int arrayIndex, char ** chos
 
 void getConnections(char * filename, int * array, int * arrayIndex, char ** chosenRooms){
 
-	printf("==== Called getConnections on room %s (%d)\n", filename, indexOf(filename, chosenRooms));
+	//printf("==== Called getConnections on room %s (%d)\n", filename, indexOf(filename, chosenRooms));
 	memset(array, 0, 10);
 	*arrayIndex = 0;
 
@@ -236,7 +239,7 @@ void getConnections(char * filename, int * array, int * arrayIndex, char ** chos
 	//printf("\n\n-------\nFilename: %s\n", filename);
 
 	while ((read = getline(&line, &len, file)) != -1){
-		printf("Line: %s\n", line);
+		//printf("Line: %s\n", line);
 
 		//parse before and after : with strtok
 		token = strtok (line, ": \n");
@@ -245,7 +248,7 @@ void getConnections(char * filename, int * array, int * arrayIndex, char ** chos
 			if (strcmp(token, "CONNECTION") == 0){
 				token = strtok (NULL, ": \n");		//pass integer value
 				token = strtok (NULL, ": \n");		//get that name into token
-				printf("CONNECTION FOUND: %s\n", token);
+				//printf("CONNECTION FOUND: %s\n", token);
 				array[*arrayIndex] = indexOf(token, chosenRooms);
 				*arrayIndex = *arrayIndex + 1;
 			}
@@ -256,7 +259,7 @@ void getConnections(char * filename, int * array, int * arrayIndex, char ** chos
 
 	fclose(file);
 
-	printConnections(filename, array, *arrayIndex, chosenRooms);
+	//printConnections(filename, array, *arrayIndex, chosenRooms);
 
 	return;
 }
@@ -269,40 +272,77 @@ void linkRooms(char ** chosenRooms){
 		//not to this same room
 		//connection does not already exist
 
-	int connections;
+	//int connections;
 	int newConnection;
 	int selfConnections[10];
 	int selfConnectionsLength=0;
 	int i, j;
 
-	printf("== Started LinkRooms...\n");
+	//printf("== Started LinkRooms...\n");
 
-	for (i = 0; i < 7; ++i){
+	for (i = 0; i < 3; ++i){
 
-		connections = getNumberOfConnections(chosenRooms[i]);
+		for (j = 0; j < 7; ++j){
 
-		printf("*= [linkrooms] got %d connections for file %s\n", connections, chosenRooms[i]);
-
-		if (connections >= 4){
-			printf("*= [linkrooms] skipping room because too many connections\n");
-		}
-		else{
-
-			for (j = 0; j < (4-connections); ++j){
-
-				getConnections(chosenRooms[i], selfConnections, &selfConnectionsLength, chosenRooms);
-				newConnection = findFreeRoomNotSelf(i, selfConnections, selfConnectionsLength, chosenRooms);
-				connectTwoRooms(newConnection, i, chosenRooms);
-
-				printf("*= Completed adding a new connection between %s and %s (aka %d, %d)\n", chosenRooms[i], chosenRooms[newConnection], i, newConnection);
-
+			//printf("*=> Connections for room %d, try %d have number %d\n",j, i, getNumberOfConnections(chosenRooms[j]));
 			
+			if (getNumberOfConnections(chosenRooms[j]) < 3){
+				//add connection
+
+				//printf("*=> Adding connections as there are not enough.\n");
+				//printf("== Room: %s\n", chosenRooms[j]);
+				//printf(" Get Connections\n");
+				getConnections(chosenRooms[j], selfConnections, &selfConnectionsLength, chosenRooms);
+				//printf(" Find Room\n");
+	 			newConnection = findFreeRoomNotSelf(j, selfConnections, selfConnectionsLength, chosenRooms);
+	 			//printf(" Connect Two Rooms\n");
+	 			connectTwoRooms(newConnection, j, chosenRooms);
+
+	 			//printf("*= Completed adding a new connection between %s and %s (aka %d, %d)\n", chosenRooms[j], chosenRooms[newConnection], j, newConnection);
 			}
 		}
+
+		//printf("Completed a lap\n");
 	}
 
 	//return
 	return;
+}
+
+
+void typeRooms(char ** chosenRooms){
+
+	int startRoom, endRoom;
+	int i;
+	FILE * file;
+
+	startRoom = rand()%7;
+	endRoom = rand()%7;
+
+	while (endRoom == startRoom){
+		endRoom = rand()%7;
+	}
+
+	for (i = 0; i < 7; ++i){
+		if (i == startRoom){
+			//write to this room that it is the start room
+			file = openFile(chosenRooms[i], (char *)"a");
+			fprintf(file, "ROOM TYPE: START_ROOM\n");
+			fclose(file);
+		}
+		else if (i == endRoom){
+			//write to this file that it is the end room
+			file = openFile(chosenRooms[i], (char *)"a");
+			fprintf(file, "ROOM TYPE: END_ROOM\n");
+			fclose(file);
+		}
+		else{
+			//write that this is a mid room
+			file = openFile(chosenRooms[i], (char *)"a");
+			fprintf(file, "ROOM TYPE: MID_ROOM\n");
+			fclose(file);
+		}
+	}
 
 }
 
@@ -339,7 +379,7 @@ int main(){
 
 	//assign ( START_ROOM | MID_ROOM | END_ROOM ) ROOM TYPE to each room.
 
-	//typeRooms(chosenRooms);
+	typeRooms(chosenRooms);
 
 	//call the Game program?
 
