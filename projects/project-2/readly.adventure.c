@@ -12,13 +12,24 @@
 
 void findDirecrory(char * directoryName){
 
-	//credit: https://stackoverflow.com/questions/42170824/use-stat-to-get-most-recently-modified-directory
-	
+	//some help from https://stackoverflow.com/questions/42170824/use-stat-to-get-most-recently-modified-directory (and man page)
+	struct stat currentStat
 
 	DIR * cd;
 	cd = opendir(".");
 
-	while ((folder = readdir(cd))){
+	while ((item = readdir(cd))){
+
+		memset(&currentStat, 0, sizeof(currentStat));
+
+		if (stat(item->d_name, &currentStat) == -1){
+			//error
+			printf("ERROR");
+			continue;
+		}
+
+
+
 
 	}
 
