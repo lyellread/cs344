@@ -150,6 +150,7 @@ int getNumberOfConnections(char * filename){
 	file = openFile(filename, (char *)"r");
 
 	//do a characterwise read to find newlines
+	//credit: https://www.geeksforgeeks.org/c-program-count-number-lines-file/
 	for (c = getc(file); c != EOF; c = getc(file)) {
 		//printf("  checking char: %c\n", c);
 		if (c == '\n') {
