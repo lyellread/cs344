@@ -140,8 +140,10 @@ int getNumberOfConnections(char * filename){
 	int lines = 0;
 	char c;
 
+	//open the target fike ti read it
 	file = openFile(filename, (char *)"r");
 
+	//do a characterwise read to find newlines
 	for (c = getc(file); c != EOF; c = getc(file)) {
 		//printf("  checking char: %c\n", c);
 		if (c == '\n') {
@@ -153,17 +155,20 @@ int getNumberOfConnections(char * filename){
 
 	//printf("*===== Connections in file %s: %i\n",filename, (lines-1));
 	fclose(file);
+
+	//its not clean or good form by any means, but it will work.
 	return (lines-1);
 }
 
 void connectTwoRooms (int a, int b, char ** chosenRooms){
 
 	//printf("\n==== Connecting rooms %d and %d.", a, b);
-
+	//link a to b
 	FILE * file = openFile(chosenRooms[a], (char *)"a");
 	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[a])+1, chosenRooms[b]);
 	fclose(file);
 
+	//link b to a
 	file = openFile(chosenRooms[b], (char *)"a");
 	fprintf(file, "CONNECTION %d: %s\n",getNumberOfConnections(chosenRooms[b])+1, chosenRooms[a]);
 	fclose(file);
@@ -177,12 +182,14 @@ int indexOf(char * name, char ** chosenRooms){
 
 	int i;
 
+	//return the index of the name name in chosenRooms
 	for (i = 0; i < 7; ++i){
 		if (strcmp(name, chosenRooms[i]) == 0){
 			return i;
 		}
 	}
 
+	//not found; break!
 	return -1;
 }
 
@@ -195,6 +202,7 @@ int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLeng
 	int randomRoom = rand()%7;
 	//printf("*== Room Rand: %d\n", randomRoom);
 
+	//while the generated room does not meet the requirements, find a new one.
 	while (randomRoom == self || in(randomRoom, selfConnections, selfConnectionsLength) || getNumberOfConnections(chosenRooms[randomRoom]) > 6 ){
 		randomRoom = rand()%7;
 		//printf("*== Room Rand: %d : %s\n", randomRoom, chosenRooms[randomRoom]);
@@ -207,6 +215,7 @@ int findFreeRoomNotSelf(int self, int * selfConnections, int selfConnectionsLeng
 
 void printConnections(char * filename, int * array, int arrayIndex, char ** chosenRooms){
 
+	//unused function - prints the contents of the array of connections passed. 
 	printf("====== Printing Connections for file: %s:\n", filename);
 
 	int i;
@@ -234,14 +243,16 @@ void getConnections(char * filename, int * array, int * arrayIndex, char ** chos
 	size_t len = 0;
 	ssize_t read;
 
+	//open that file
 	file = openFile(filename, (char *)"r");
 
 	//printf("\n\n-------\nFilename: %s\n", filename);
 
+	//read it line by line ...
 	while ((read = getline(&line, &len, file)) != -1){
 		//printf("Line: %s\n", line);
 
-		//parse before and after : with strtok
+		//... parse before and after : inclusive-or ' ' with strtok
 		token = strtok (line, ": \n");
 		while (token != NULL){
 			
@@ -280,8 +291,10 @@ void linkRooms(char ** chosenRooms){
 
 	//printf("== Started LinkRooms...\n");
 
+	//each room needs three connections at least, so assure that with this:
 	for (i = 0; i < 3; ++i){
 
+		//for each room on this "lap" add a connection if it needs one
 		for (j = 0; j < 7; ++j){
 
 			//printf("*=> Connections for room %d, try %d have number %d\n",j, i, getNumberOfConnections(chosenRooms[j]));
@@ -316,13 +329,16 @@ void typeRooms(char ** chosenRooms){
 	int i;
 	FILE * file;
 
+	//generate start room and end room indicies
 	startRoom = rand()%7;
 	endRoom = rand()%7;
 
+	//... they cannot be the same of course...
 	while (endRoom == startRoom){
 		endRoom = rand()%7;
 	}
 
+	//iterate over all the available rooms and add their respective room type
 	for (i = 0; i < 7; ++i){
 		if (i == startRoom){
 			//write to this room that it is the start room
@@ -348,6 +364,8 @@ void typeRooms(char ** chosenRooms){
 
 int main(){
 
+	//define our possible room names
+
 	int roomNamesSize = 10;
 	char * roomNames[roomNamesSize];
 	roomNames[0] = "bacon";
@@ -363,26 +381,21 @@ int main(){
 
 	char * chosenRooms[7];
 
+	//gotta seed random in a *completely safe* way
 	srand(time(0));
 
 	//create directory && chdir to it
-
 	makeDirectory();
 
 	//pick random rooms and create those files with only the ROOM NAME header present
-
 	createRooms(roomNames, roomNamesSize, chosenRooms);
 
 	//link files already created to one another with the CONNECTION n list.
-
 	linkRooms(chosenRooms);
 
 	//assign ( START_ROOM | MID_ROOM | END_ROOM ) ROOM TYPE to each room.
-
 	typeRooms(chosenRooms);
 
 	//call the Game program?
-
-
 
 }
