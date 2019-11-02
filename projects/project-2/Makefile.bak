@@ -20,6 +20,6 @@ c:
 
 
 game_base: readly.adventure.c
-	gcc -o readly.adventure readly.adventure.c -lpthread
+	gcc -o readly.adventure -Wall readly.adventure.c -lpthread
 rooms_base: readly.buildrooms.c
-	gcc -o readly.buildrooms readly.buildrooms.c
+	gcc -o readly.buildrooms -Wall readly.buildrooms.c -lpthread

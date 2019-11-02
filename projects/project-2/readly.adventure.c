@@ -252,6 +252,9 @@ void * timeToFile(){
 		//wait for lock, when we can lock that means we wanna write time to file
 		pthread_mutex_lock(&lock);
 
+		//printf("REACHED TIME TO FILE MUTEX UNLOCK");
+		//fflush(stdout);
+
 		//timeNow = time(0);
 		time(&timeNow);
 		currentTime = localtime(&timeNow);
@@ -386,11 +389,11 @@ void game(char * startRoom){
 		while (ret == 1){
 			//unlock 
 			pthread_mutex_unlock(&lock);
+			
+			//printf("[input] UNLOCKED\n");
+			//fflush(stdout);
 
-			// printf("[input] UNLOCKED\n");
-			// fflush(stdout);
-
-			sleep(0.5);
+			sleep(2.5);
 
 			//wait till lock again
 			pthread_mutex_lock(&lock);
@@ -399,9 +402,8 @@ void game(char * startRoom){
 			printDate(file);
 			fclose(file);
 
-
-			// printf("[input] LOCKED\n");
-			// fflush(stdout);
+			//printf("[input] LOCKED\n");
+			//fflush(stdout);
 
 			//seek next round of input. I know its recursive - it'll all be fine i hope...
 			prompt(currentRoom, currentConnections);
@@ -454,4 +456,6 @@ int main() {
 
 	//run the game with that start room as the initial room
 	game(startRoom);
+
+	return 0;
 }

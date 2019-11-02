@@ -401,5 +401,5 @@ int main(){
 	//assign ( START_ROOM | MID_ROOM | END_ROOM ) ROOM TYPE to each room.
 	typeRooms(chosenRooms);
 
-	//call the Game program?
+	return 0;
 }
