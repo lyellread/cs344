@@ -80,9 +80,11 @@ void printArray(char ** array, int len){
 	for (i = 0; i < len-1; ++i){
 
 		printf("%s, ", array[i]);
+		fflush(stdout);
 	}
 
 	printf("%s. [END]\n", array[len-1]);
+	fflush(stdout);
 
 	return;
 }
@@ -120,13 +122,12 @@ void __status(){
 void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
 
 	//initialize those variables
-	char * inputData[500];
+	char inputData[500];
 	inputData[0] = '\0';
 
 	*backgroundFlag = 0;
 
-	int pid;
-	char * spid[7];
+	char spid[7];
 	spid[0] = '\0';
 
 	char * token;
@@ -137,17 +138,18 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	fflush(stdout);
 
 	//read input from 
-	scanf("%499s", inputData);
+	fgets(inputData, 499, stdin);
 
 	//if there's nothing, repeat until there is *something*
-	while (strcmp(inputData, "") == 0){
+	while (strcmp(inputData, "\n") == 0){
+	//while (inputData[0] == '\n'){
 
 		//print out the prompt for the user
 		printf(": ");
 		fflush(stdout);
 
 		//read input from 
-		scanf("%499s", inputData);
+		fgets(inputData, 499, stdin);
 
 	}
 
@@ -156,7 +158,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	fflush(stdout);
 
 	//use strtok to break and process input word by word
-	token = strtok(inputData, " ");
+	token = strtok(inputData, " \n");
 
 	while (token != NULL){
 
@@ -164,7 +166,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 		if (strcmp(token, ">") == 0){
 
 			//the next word will be the output file.
-			token = strtok(NULL, " ");
+			token = strtok(NULL, " \n");
 			strcpy(redirOut, token);
 
 			//current = redirOut
@@ -174,7 +176,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 		else if (strcmp(token, "<") == 0){
 
 			//the next word will be the input file.
-			token = strtok(NULL, " ");
+			token = strtok(NULL, " \n");
 			strcpy(redirIn, token);
 
 			//current = redirIn
@@ -193,8 +195,10 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 
 			//convert the pid to string, then append it to the nth place in the commandArray
 			sprintf(spid, "%d", getpid());
-			strcpy(commandArray[*commandArrayIndex], spid);
-			*commandArrayIndex++;
+			commandArray[*commandArrayIndex] = strdup(spid);
+			*commandArrayIndex = *commandArrayIndex + 1;
+			printf("=== [promptInput] = Added: %s at %d\n", spid, *commandArrayIndex);
+			fflush(stdout);
 
 			//current = "$$"
 		}
@@ -202,12 +206,14 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 		//we got a command or value that we want to append to the string
 		else {
 
-			strcpy(commandArray[*commandArrayIndex], token);
-			*commandArrayIndex++;
+			commandArray[*commandArrayIndex] = strdup(token);
+			*commandArrayIndex = *commandArrayIndex + 1;
+			printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex);
+			fflush(stdout);
 		}
 
 		//get the next one on the line
-		token = strtok(NULL, " ");
+		token = strtok(NULL, " \n");
 	}
 }
 
@@ -215,16 +221,23 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 void runSmallsh(){
 
 	int backgroundFlag;
-	char commandArray[20][40];
+	char *commandArray[20];
 	int commandArrayIndex = 0;
 	char redirOut[40];
 	char redirIn[40];
+	int i;
 
 	while (1){
 
-		memset(commandArray, 0, sizeof(commandArray[0]) * 20);
 		redirIn[0] = '\0';
 		redirOut[0] = '\0';
+
+		//clean up from last round's strudp's which alloc that sweet sweet memory
+		for (i = 0; i < commandArrayIndex; ++i){
+			if (commandArray[i] != NULL){
+				free(commandArray[i]);
+			}
+		}
 		
 		//get the input from promptInput()
 		promptInput(&backgroundFlag, commandArray, &commandArrayIndex, redirIn, redirOut);
@@ -234,14 +247,11 @@ void runSmallsh(){
 
 		//execute the chosen command
 		printf("== [runSmallsh] = BG:%d; Command:", commandArrayIndex);
+		fflush(stdout);
 		printArray(commandArray, commandArrayIndex);
-
-
+		printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
+		fflush(stdout);
 	}
-
-
-
-
 }
 
 
@@ -250,9 +260,7 @@ int main(){
 	printf("= [main] = Started.\n");
 	fflush(stdout);
 
-
-
-
+	runSmallsh();
 
 	printf("= [main] = Ended.\n");
 	fflush(stdout);
