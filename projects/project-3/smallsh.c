@@ -11,7 +11,7 @@
 #include <assert.h>
 
 
-//============================= D I R E C T O R Y ===================================//
+//======================= S U P P O R T I N G   F U N C T I O N S ============================//
 
 
 int int_in (int val, int * array, int arraySize){
@@ -73,6 +73,19 @@ FILE * openFile(char * filename, char * method){
 		}
 }
 
+void printArray(char ** array, int len){
+
+	int i;
+
+	for (i = 0; i < len-1; ++i){
+
+		printf("%s, ", array[i]);
+	}
+
+	printf("%s. [END]\n", array[len-1]);
+
+	return;
+}
 
 //===================== B U I L T I N   F U N C T I O N S =======================//
 
@@ -104,12 +117,20 @@ void __status(){
 
 }
 
-void promptInput(int * backgroundFlag, char ** commandArray char * redirIn, char * redirOut){
+void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
 
 	//initialize those variables
 	char * inputData[500];
 	inputData[0] = '\0';
+
+	*backgroundFlag = 0;
+
+	int pid;
+	char * spid[7];
+	spid[0] = '\0';
+
 	char * token;
+	*commandArrayIndex = 0;
 
 	//print out the prompt for the user
 	printf(": ");
@@ -146,26 +167,95 @@ void promptInput(int * backgroundFlag, char ** commandArray char * redirIn, char
 			token = strtok(NULL, " ");
 			strcpy(redirOut, token);
 
+			//current = redirOut
 		}
 
 		//check for input redirection "<"
-		if (strcmp(token, "<") == 0){
+		else if (strcmp(token, "<") == 0){
 
 			//the next word will be the input file.
 			token = strtok(NULL, " ");
 			strcpy(redirIn, token);
 
+			//current = redirIn
 		}
 
 		//check for the use of the "&" operator, and set the background bool appropriately
-		
+		else if (strcmp(token, "&") == 0){
 
+			*backgroundFlag = 1;
+
+			//current = "&"
+		}
+
+		//check for hte $$ and immediately replace it with the pid as a string of this function.
+		else if (strcmp(token, "$$") == 0){
+
+			//convert the pid to string, then append it to the nth place in the commandArray
+			sprintf(spid, "%d", getpid());
+			strcpy(commandArray[*commandArrayIndex], spid);
+			*commandArrayIndex++;
+
+			//current = "$$"
+		}
+
+		//we got a command or value that we want to append to the string
+		else {
+
+			strcpy(commandArray[*commandArrayIndex], token);
+			*commandArrayIndex++;
+		}
 
 		//get the next one on the line
 		token = strtok(NULL, " ");
 	}
+}
 
 
+void runSmallsh(){
+
+	int backgroundFlag;
+	char commandArray[20][40];
+	int commandArrayIndex = 0;
+	char redirOut[40];
+	char redirIn[40];
+
+	while (1){
+
+		memset(commandArray, 0, sizeof(commandArray[0]) * 20);
+		redirIn[0] = '\0';
+		redirOut[0] = '\0';
+		
+		//get the input from promptInput()
+		promptInput(&backgroundFlag, commandArray, &commandArrayIndex, redirIn, redirOut);
+
+		//interpret the result?
+
+
+		//execute the chosen command
+		printf("== [runSmallsh] = BG:%d; Command:", commandArrayIndex);
+		printArray(commandArray, commandArrayIndex);
+
+
+	}
+
+
+
+
+}
+
+
+int main(){
+
+	printf("= [main] = Started.\n");
+	fflush(stdout);
+
+
+
+
+
+	printf("= [main] = Ended.\n");
+	fflush(stdout);
 
 
 }
