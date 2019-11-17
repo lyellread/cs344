@@ -259,7 +259,28 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 		//we got a command or value that we want to append to the string
 		else {
 
+			//before we can add the token to the array, we must check for a '$$' at the end of the
+			//string and replace it with the pid. 
+			char temp[100];
 			commandArray[*commandArrayIndex] = strdup(token);
+
+			//ok its not elegant but yeah.
+			if(strlen(commandArray[*commandArrayIndex]) >= 2){
+				if (commandArray[*commandArrayIndex][strlen(commandArray[*commandArrayIndex])-2] == '$' &&
+					commandArray[*commandArrayIndex][strlen(commandArray[*commandArrayIndex])-1] == '$'){
+
+						token[strlen(token)-2]='\0';
+
+						//free that old array entry.
+						free(commandArray[*commandArrayIndex]);
+
+						//strdup that again with the pid appended after the token
+						snprintf(temp, 99, "%s%d", token, getpid());
+						commandArray[*commandArrayIndex] = strdup(temp);
+
+				}
+			}
+
 			*commandArrayIndex = *commandArrayIndex + 1;
 			// printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex-1);
 			// fflush(stdout);
