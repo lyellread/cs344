@@ -432,13 +432,13 @@ void runSmallsh(){
 
 	//set up the required sigaction() things
 
-	struct sigaction saSigint = {0};
+	struct sigaction saSigint = {{0}};
 	saSigint.sa_handler = SIG_IGN;	//ignore sigint
 	sigfillset(&saSigint.sa_mask);
 	saSigint.sa_flags = 0;
 	sigaction(SIGINT, &saSigint, NULL);
 
-	struct sigaction saSigtstp = {0};
+	struct sigaction saSigtstp = {{0}};
 	saSigtstp.sa_handler = catchSIGTSTP;	//ignore sigtstp
 	sigfillset(&saSigtstp.sa_mask);
 	saSigtstp.sa_flags = 0;
@@ -503,6 +503,7 @@ int main(){
 
 	// printf("= [main] = Ended.\n");
 	// fflush(stdout);
-
+	
+	return 0;
 
 }
