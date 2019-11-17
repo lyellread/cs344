@@ -89,34 +89,63 @@ void printArray(char ** array, int len){
 	return;
 }
 
+void cd(char * path){
+
+	printf("===== [cd] = Called with path %s.\n", path);
+	fflush(stdout);
+
+	if (chdir(path) != 0){
+
+		printf("cd: no such file or directory: %s\n", path);
+		fflush(stdout);
+		return;
+	}
+
+	else{
+
+		chdir(path);
+		return;
+	}
+}
+
 //===================== B U I L T I N   F U N C T I O N S =======================//
 
 
 void __exit() {
-
-	//kill anything that is running
-
 
 	//exit the shell
 	exit (0);
 }
 
 
-void __cd(char * path) {
+void __cd(char ** commandArray, int commandArrayIndex) {
 
-	//check that path is valid
+	printf("==== [__cd] = Called.\n");
+	fflush(stdout);
 
+	if (commandArrayIndex == 1){
 
-	//change directory to that path
+		printf("==== [__cd] = GetEnv(HOME) => %s\n", getenv("HOME"));
+		fflush(stdout);
+		cd(getenv("HOME"));
+	}
 
+	else{
 
+		cd(commandArray[1]);
+	}
+	
+	return;
 }
 
 
-void __status(){
+void __status(int lastReturnValue){
 
-	//return the value of the exit status
+	//print the value of the exit status
+	printf("exit status %d\n", lastReturnValue);
+	fflush(stdout);
 
+	return;
 }
 
 void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
@@ -141,7 +170,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	fgets(inputData, 499, stdin);
 
 	//if there's nothing, repeat until there is *something*
-	while (strcmp(inputData, "\n") == 0){
+	while (strcmp(inputData, "\n") == 0 || inputData[0] == '#'){
 	//while (inputData[0] == '\n'){
 
 		//print out the prompt for the user
@@ -154,7 +183,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	}
 
 	//now we have a non- blank input.
-	printf("=== [promptInput] = Value of input: %s\n", inputData);
+	printf("=== [promptInput] = Value of input: %s", inputData);
 	fflush(stdout);
 
 	//use strtok to break and process input word by word
@@ -197,7 +226,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 			sprintf(spid, "%d", getpid());
 			commandArray[*commandArrayIndex] = strdup(spid);
 			*commandArrayIndex = *commandArrayIndex + 1;
-			printf("=== [promptInput] = Added: %s at %d\n", spid, *commandArrayIndex);
+			printf("=== [promptInput] = Added: %s at %d\n", spid, *commandArrayIndex-1);
 			fflush(stdout);
 
 			//current = "$$"
@@ -208,7 +237,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 
 			commandArray[*commandArrayIndex] = strdup(token);
 			*commandArrayIndex = *commandArrayIndex + 1;
-			printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex);
+			printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex-1);
 			fflush(stdout);
 		}
 
@@ -217,6 +246,21 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	}
 }
 
+void execCommand(char ** commandArray, int commandArrayIndex, int backgroundFlag, int * lastReturnValue, char * redirIn, char * redirOut){
+
+
+	//set up redirection
+
+
+	//fork
+
+
+	//execute that command wihtin a forked session
+
+
+	//return to parent
+
+}
 
 void runSmallsh(){
 
@@ -226,6 +270,7 @@ void runSmallsh(){
 	char redirOut[40];
 	char redirIn[40];
 	int i;
+	int lastReturnValue = -420;
 
 	while (1){
 
@@ -242,15 +287,35 @@ void runSmallsh(){
 		//get the input from promptInput()
 		promptInput(&backgroundFlag, commandArray, &commandArrayIndex, redirIn, redirOut);
 
-		//interpret the result?
+		//check if we need to use a builtin
+		if ( (strcmp(commandArray[0], "exit") == 0) || 
+			(strcmp(commandArray[0], "status") == 0) || 
+			(strcmp(commandArray[0], "cd") == 0)){
 
+			if ((strcmp(commandArray[0], "exit") == 0)){
 
-		//execute the chosen command
-		printf("== [runSmallsh] = BG:%d; Command:", commandArrayIndex);
-		fflush(stdout);
-		printArray(commandArray, commandArrayIndex);
-		printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
-		fflush(stdout);
+				__exit();
+			}
+			else if ((strcmp(commandArray[0], "status") == 0)){
+
+				__status(lastReturnValue);
+			}
+			else if ((strcmp(commandArray[0], "cd") == 0)){
+
+				__cd(commandArray, commandArrayIndex);
+			}
+		}
+
+		//else execute the chosen command
+		else{
+			printf("== [runSmallsh] = BG:%d; Command:", commandArrayIndex);
+			fflush(stdout);
+			printArray(commandArray, commandArrayIndex);
+			printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
+			fflush(stdout);
+
+			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut);
+		}
 	}
 }
 
