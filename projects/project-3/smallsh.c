@@ -309,7 +309,9 @@ void execCommand(char ** commandArray,
 				//open the target file to output to.
 				int targetFD = open(redirOut, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 				if (targetFD == -1){
-					perror("[error] FAILED TO OPEN FILE FOR OUTPUT REDIRECTION");
+					//perror("[error] FAILED TO OPEN FILE FOR OUTPUT REDIRECTION");
+					printf("%s: no such file or directory\n", commandArray[0]);
+					fflush(stdout);
 					exit(1);
 				}
 
@@ -333,7 +335,9 @@ void execCommand(char ** commandArray,
 				int sourceFD = open(redirIn, O_RDONLY);
 				if (sourceFD == -1){
 					//perror("open");
-					perror("[error] FAILED TO OPEN FILE FOR INPUT REDIRECTION");
+					//perror("[error] FAILED TO OPEN FILE FOR INPUT REDIRECTION");
+					printf("%s: no such file or directory\n", commandArray[0]);
+					fflush(stdout);
 					exit(1);
 				}
 
@@ -359,6 +363,7 @@ void execCommand(char ** commandArray,
 			//check for erroring out:
 			if (result == -1){
 				printf("%s: no such file or directory\n", commandArray[0]);
+				fflush(stdout);
 				// fprintf(stderr,"execvp() failed. errno=%d\n",errno);
 				// perror("execvp");
 				// fflush(stdout);
