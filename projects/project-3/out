@@ -1,5 +1,57 @@
-Makefile
-out
-p3testscript
-smallsh
-smallsh.c
+total 4.1M
+drwxr-xr-x 29 lread lread 4.0K Nov 17 01:31 .
+drwxr-xr-x  3 root  root  4.0K Oct  3 23:24 ..
+lrwxrwxrwx  1 lread lread   21 Oct 24 17:36 .aliases -> ./lread/dots/.aliases
+-rw-rw-r--  1 lread lread 3.0K Oct 22 18:17 .aliases.bak
+-rw-rw-r--  1 lread lread 2.7K Oct 11 21:07 .aliases.save
+drwxrwxr-x  4 lread lread 4.0K Nov  2 01:54 .audacity-data
+-rw-------  1 lread lread  300 Oct  4 00:16 .bash_history
+-rw-r--r--  1 lread lread  220 Oct  3 23:24 .bash_logout
+-rw-r--r--  1 lread lread 3.7K Oct  3 23:24 .bashrc
+drwxr-xr-x 38 lread lread 4.0K Nov 16 01:30 .cache
+drwxr-xr-x 31 lread lread 4.0K Nov 17 01:09 .config
+drwxr-xr-x  2 lread lread 4.0K Nov 13 23:54 Desktop
+drwxr-xr-x  2 lread lread 4.0K Oct  3 23:57 Documents
+drwxr-xr-x  2 lread lread 4.0K Nov 16 18:31 Downloads
+-rw-r--r--  1 lread lread    0 Nov 16 23:06 echo
+-rw-r--r--  1 lread lread  15K Oct  3 23:24 .face
+lrwxrwxrwx  1 lread lread    5 Oct  3 23:24 .face.icon -> .face
+-rw-rw-r--  1 lread lread   55 Oct  6 16:42 .gitconfig
+drwx------  3 lread lread 4.0K Nov  8 16:37 .gnupg
+drwxr-xr-x  2 lread lread 4.0K Oct 22 20:25 .gphoto
+-rw-rw-r--  1 lread lread  471 Nov  8 16:36 .gtkrc-2.0
+lrwxrwxrwx  1 lread lread   22 Oct 22 22:41 .gtkrc-2.0-kde4 -> /home/lread/.gtkrc-2.0
+drwxrwxr-x  3 lread lread 4.0K Oct  3 23:57 .kde
+-rw-------  1 lread lread   32 Oct 18 09:49 .lesshst
+drwxr-xr-x  6 lread lread 4.0K Oct 15 13:04 .local
+drwxrwxr-x  4 lread lread 4.0K Nov 11 15:14 lread
+-rw-r--r--  1 lread lread    0 Nov 16 23:06 ls
+drwxrwxr-x  8 lread lread 4.0K Nov  7 00:15 .minecraft
+drwx------  5 lread lread 4.0K Oct  6 17:55 .mozilla
+drwxr-xr-x  3 lread lread  36K Nov  2 02:04 Music
+drwxrwxr-x  4 lread lread 4.0K Nov 11 15:19 .npm
+-rw-rw-r--  1 lread lread    0 Oct 22 18:37 .odbc.ini
+drwxr-xr-x 12 lread lread 4.0K Nov  7 17:39 .oh-my-zsh
+drwxr-xr-x  2 lread lread 4.0K Oct 24 23:16 Pictures
+drwx------  3 lread lread 4.0K Oct  4 00:15 .pki
+-rw-r--r--  1 lread lread  807 Oct  3 23:24 .profile
+drwxr-xr-x  2 lread lread 4.0K Oct  3 23:57 Public
+-rw-------  1 lread lread   18 Oct 15 13:17 .python_history
+drwxrwxr-x  6 lread lread 4.0K Nov  1 22:46 school
+drwx------  2 lread lread 4.0K Oct  4 00:39 .ssh
+-rw-r--r--  1 lread lread    0 Oct  3 23:57 .sudo_as_admin_successful
+drwxr-xr-x  2 lread lread 4.0K Oct  3 23:57 Templates
+drwxrwxr-x  2 lread lread 4.0K Nov 16 23:15 testdir$$
+lrwxrwxrwx  1 lread lread   23 Oct 24 17:36 .tmux.conf -> ./lread/dots/.tmux.conf
+-rw-rw-r--  2 lread lread  595 Oct 24 17:35 .tmux.conf.bak
+drwxr-xr-x  2 lread lread 4.0K Oct  3 23:57 Videos
+drwxrwxr-x  3 lread lread 4.0K Oct 27 20:39 VirtualBox VMs
+drwxrwxr-x  2 lread lread 4.0K Nov  7 01:01 .vpn
+-rw-rw-r--  1 lread lread  378 Oct 18 09:02 .wget-hsts
+drwxrwxr-x  4 lread lread 4.0K Oct 22 19:15 .wine
+-rw-------  1 lread lread   53 Nov  8 16:36 .Xauthority
+-rw-------  1 lread lread 3.7M Nov 17 01:30 .xsession-errors
+-rw-rw-r--  1 lread lread  45K Oct  4 00:19 .zcompdump
+-rw-r--r--  1 lread lread  45K Oct  4 00:23 .zcompdump-darkstar-5.5.1
+-rw-------  1 lread lread 123K Nov 17 01:31 .zsh_history
+lrwxrwxrwx  1 lread lread   19 Oct 24 17:36 .zshrc -> ./lread/dots/.zshrc

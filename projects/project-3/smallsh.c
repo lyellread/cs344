@@ -94,8 +94,8 @@ void printArray(char ** array, int len){
 
 void cd(char * path){
 
-	printf("===== [cd] = Called with path %s.\n", path);
-	fflush(stdout);
+	// printf("===== [cd] = Called with path %s.\n", path);
+	// fflush(stdout);
 
 	if (chdir(path) != 0){
 
@@ -123,13 +123,13 @@ void __exit() {
 
 void __cd(char ** commandArray, int commandArrayIndex) {
 
-	printf("==== [__cd] = Called.\n");
-	fflush(stdout);
+	// printf("==== [__cd] = Called.\n");
+	// fflush(stdout);
 
 	if (commandArrayIndex == 1){
 
-		printf("==== [__cd] = GetEnv(HOME) => %s\n", getenv("HOME"));
-		fflush(stdout);
+		// printf("==== [__cd] = GetEnv(HOME) => %s\n", getenv("HOME"));
+		// fflush(stdout);
 		cd(getenv("HOME"));
 	}
 
@@ -150,19 +150,25 @@ int __status(int lastReturnValue, int mode){
 
 		// the program exited wiht a value
 		status = WEXITSTATUS(lastReturnValue);
+
+		//print the value of the exit status
+		if (mode){
+		printf("exit status %d\n", status);
+		fflush(stdout);
+		}
 	}
+
 	else{
 
 		//a signal killed that boi return the int, but dont set status
-		return WTERMSIG(lastReturnValue);
-	}
+		status = WTERMSIG(lastReturnValue);
 
-	//print the value of the exit status
-	if (mode){
-	printf("exit status %d\n", status);
-	fflush(stdout);
-	}
+		if (mode){
+		printf("terminated by signal %d\n", status);
+		fflush(stdout);
+		}
 
+	}
 	return status;
 }
 
@@ -201,8 +207,8 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	}
 
 	//now we have a non- blank input.
-	printf("=== [promptInput] = Value of input: %s", inputData);
-	fflush(stdout);
+	// printf("=== [promptInput] = Value of input: %s", inputData);
+	// fflush(stdout);
 
 	//use strtok to break and process input word by word
 	token = strtok(inputData, " \n");
@@ -244,8 +250,8 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 			sprintf(spid, "%d", getpid());
 			commandArray[*commandArrayIndex] = strdup(spid);
 			*commandArrayIndex = *commandArrayIndex + 1;
-			printf("=== [promptInput] = Added: %s at %d\n", spid, *commandArrayIndex-1);
-			fflush(stdout);
+			// printf("=== [promptInput] = Added: %s at %d\n", spid, *commandArrayIndex-1);
+			// fflush(stdout);
 
 			//current = "$$"
 		}
@@ -255,8 +261,8 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 
 			commandArray[*commandArrayIndex] = strdup(token);
 			*commandArrayIndex = *commandArrayIndex + 1;
-			printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex-1);
-			fflush(stdout);
+			// printf("=== [promptInput] = Added: %s at %d\n", token, *commandArrayIndex-1);
+			// fflush(stdout);
 		}
 
 		//get the next one on the line
@@ -296,8 +302,8 @@ void execCommand(char ** commandArray,
 
 			if (strcmp(redirOut, "") != 0){
 				//we need to redirect stdout to the outfile
-				printf("======= [execCommand, Child] = Noticed that redirection of stdout is required.\n");
-				fflush(stdout);
+				// printf("======= [execCommand, Child] = Noticed that redirection of stdout is required.\n");
+				// fflush(stdout);
 
 				//open the target file to output to.
 				int targetFD = open(redirOut, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -319,18 +325,19 @@ void execCommand(char ** commandArray,
 
 			if (strcmp(redirIn, "") != 0){
 				//we need to redirect stdout to the outfile
-				printf("======= [execCommand, Child] = Noticed that redirection of stdin is required.\n");
-				fflush(stdout);
+				//printf("======= [execCommand, Child] = Noticed that redirection of stdin is required.\n");
+				// /fflush(stdout);
 
 				//open the target file to output to.
-				int sourceFD = open(redirOut, O_RDONLY);
+				int sourceFD = open(redirIn, O_RDONLY);
 				if (sourceFD == -1){
+					//perror("open");
 					perror("[error] FAILED TO OPEN FILE FOR INPUT REDIRECTION");
 					exit(1);
 				}
 
 				//redirect stdout (1) to targetFD
-				result = dup2(sourceFD, 1);
+				result = dup2(sourceFD, 0);
 				if (result == -1){
 					perror("[error] DUP2 COMMAND FAILED TO REDIRECT");
 					exit(2);
@@ -345,15 +352,15 @@ void execCommand(char ** commandArray,
 			commandArray[commandArrayIndex] = NULL;
 			result = execvp(commandArray[0], (char * const *)commandArray);
 
-			printf("====== [execCommand, Child] = Exec ran and returned: %d\n", result);
-			fflush(stdout);
+			// printf("====== [execCommand, Child] = Exec ran and returned: %d\n", result);
+			// fflush(stdout);
 
 			//check for erroring out:
 			if (result == -1){
 				printf("%s: no such file or directory\n", commandArray[0]);
-				fprintf(stderr,"execvp() failed. errno=%d\n",errno);
-				perror("execvp");
-				fflush(stdout);
+				// fprintf(stderr,"execvp() failed. errno=%d\n",errno);
+				// perror("execvp");
+				// fflush(stdout);
 				exit(3);
 			}
 
@@ -383,11 +390,11 @@ void execCommand(char ** commandArray,
 			//otherwise, launch as a foreground process.
 			else{
 
-				printf("====== [execCommand; Parent] = Default Started\n");
-				fflush(stdout);
+				// printf("====== [execCommand; Parent] = Default Started\n");
+				// fflush(stdout);
 				actualPid = waitpid(forkPid, lastReturnValue, 0);
-				printf("====== [execCommand; Parent] = PID Quit with code: %d; actualPid: %d\n", __status(*lastReturnValue, 0), actualPid);
-				fflush(stdout);
+				// printf("====== [execCommand; Parent] = PID Quit with code: %d; actualPid: %d\n", __status(*lastReturnValue, 0), actualPid);
+				// fflush(stdout);
 			}	
 	}
 
@@ -396,7 +403,8 @@ void execCommand(char ** commandArray,
 	while ((exitedPid = waitpid(-1, lastReturnValue, WNOHANG)) > 0){
 
 		//we have process exitedPid that quit. Report that:
-		printf("background pid %d is done: exit value %d\n", exitedPid, __status(*lastReturnValue, 0));
+		printf("background pid %d is done: ", exitedPid);
+		__status(*lastReturnValue, 1);
 		fflush(stdout);
 	}
 }
@@ -452,11 +460,12 @@ void runSmallsh(){
 
 		//else execute the chosen command
 		else{
-			printf("== [runSmallsh] = BG:%d; Command:", backgroundFlag);
-			fflush(stdout);
-			printArray(commandArray, commandArrayIndex);
-			printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
-			fflush(stdout);
+			//Debug:
+			// printf("== [runSmallsh] = BG:%d; Command:", backgroundFlag);
+			// fflush(stdout);
+			//printArray(commandArray, commandArrayIndex);
+			// printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
+			// fflush(stdout);
 
 			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut);
 		}
@@ -466,13 +475,13 @@ void runSmallsh(){
 
 int main(){
 
-	printf("= [main] = Started.\n");
-	fflush(stdout);
+	// printf("= [main] = Started.\n");
+	// fflush(stdout);
 
 	runSmallsh();
 
-	printf("= [main] = Ended.\n");
-	fflush(stdout);
+	// printf("= [main] = Ended.\n");
+	// fflush(stdout);
 
 
 }
