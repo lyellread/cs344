@@ -11,70 +11,11 @@
 #include <assert.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <signal.h>
 
 int backgroundGlobal = 1;
 
 //======================= S U P P O R T I N G   F U N C T I O N S ============================//
-
-
-int int_in (int val, int * array, int arraySize){
-
-	int j;
-	//immitation python in() fx. Straightforward.
-
-	for (j = 0; j < arraySize; ++j){
-
-		//if vals are the same, return true its in that array
-		//printf("Comparing %d, %d", val, array[j]);
-
-		if (array[j] == val){
-			return j;
-		}
-
-	}
-
-	//not found - return false its not in that array.
-	return -1;
-}
-
-
-int char_in (char * val, char ** array, int arraySize){
-
-	int j;
-	//immitation python in() fx. Straightforward.
-
-	for (j = 0; j < arraySize; ++j){
-
-		//if vals are the same, return true its in that array
-		//printf("Comparing %d, %d", val, array[j]);
-
-		if (array[j] == val){
-			return j;
-		}
-
-	}
-
-	//not found - return false its not in that array.
-	return -1;
-}
-
-
-FILE * openFile(char * filename, char * method){
-
-	//printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
-	errno = 0;
-	FILE * file = fopen(filename, method);
-
-		if (file == NULL){
-			//if error, quit.
-			//printf("ERROR ON FOPEN, ERRNO: %d\n", errno);
-			exit(-1);
-		}
-		else{
-			//printf("[FOPEN: FD: %d]\n", fileno(file));
-			return file;
-		}
-}
 
 void printArray(char ** array, int len){
 
@@ -170,6 +111,38 @@ int __status(int lastReturnValue, int mode){
 
 	}
 	return status;
+}
+
+void catchSIGTSTP (int signalNumber){
+
+	switch (backgroundGlobal){
+
+		case 0:
+
+			//switch to 'on' - background allowed.
+			backgroundGlobal = 1;
+
+			//post message. but most be async safe && reentrant ok - use write.
+			const char * off_message = "Exiting foreground-only mode\n";
+			write(1, off_message, strlen(off_message));
+			fflush(stdout);
+
+			break;
+
+		case 1:
+
+			//switch to 'off' - background naahwt allowed.
+			backgroundGlobal = 0;
+
+			//post message. but most be async safe && reentrant ok - use write.
+			const char * on_message = "Entering foreground-only mode (& is now ignored)\n";
+			write(1, on_message, strlen(on_message));
+			fflush(stdout);
+
+			break;
+	}
+
+	return;
 }
 
 void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
@@ -296,7 +269,8 @@ void execCommand(char ** commandArray,
 					int backgroundFlag, 
 					int * lastReturnValue, 
 					char * redirIn, 
-					char * redirOut){
+					char * redirOut,
+					struct sigaction saSigint){
 
 
 	pid_t forkPid = -42;
@@ -319,6 +293,12 @@ void execCommand(char ** commandArray,
 		case 0:
 
 			//success! We're now the child boiiii
+
+			//set it so that the child will get the sigint that we set to 'off' in a caller fxn
+
+			saSigint.sa_handler = SIG_DFL;
+			sigaction(SIGINT, &saSigint, NULL);
+
 			//set redirection
 
 			if (strcmp(redirOut, "") != 0){
@@ -445,6 +425,21 @@ void runSmallsh(){
 	int i;
 	int lastReturnValue = -420;
 
+	//set up the required sigaction() things
+
+	struct sigaction saSigint = {0};
+	saSigint.sa_handler = SIG_IGN;	//ignore sigint
+	sigfillset(&saSigint.sa_mask);
+	saSigint.sa_flags = 0;
+	sigaction(SIGINT, &saSigint, NULL);
+
+	struct sigaction saSigtstp = {0};
+	saSigtstp.sa_handler = catchSIGTSTP;	//ignore sigtstp
+	sigfillset(&saSigtstp.sa_mask);
+	saSigtstp.sa_flags = 0;
+	sigaction(SIGTSTP, &saSigtstp, NULL);
+
+
 	while (1){
 
 		redirIn[0] = '\0';
@@ -488,7 +483,7 @@ void runSmallsh(){
 			// printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
 			// fflush(stdout);
 
-			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut);
+			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut, saSigint);
 		}
 	}
 }
