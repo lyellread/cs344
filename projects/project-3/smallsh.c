@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <sys/wait.h>
-
+#include <fcntl.h>
 
 int backgroundGlobal = 1;
 
@@ -276,6 +276,8 @@ void execCommand(char ** commandArray,
 	pid_t actualPid;
 	pid_t exitedPid;
 
+	int result;
+
 	forkPid = fork();
 
 	switch(forkPid){
@@ -290,18 +292,76 @@ void execCommand(char ** commandArray,
 		case 0:
 
 			//success! We're now the child boiiii
-
-			
 			//set redirection
 
+			if (strcmp(redirOut, "") != 0){
+				//we need to redirect stdout to the outfile
+				printf("======= [execCommand, Child] = Noticed that redirection of stdout is required.\n");
+				fflush(stdout);
 
-			//run dat command
+				//open the target file to output to.
+				int targetFD = open(redirOut, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				if (targetFD == -1){
+					perror("[error] FAILED TO OPEN FILE FOR OUTPUT REDIRECTION");
+					exit(1);
+				}
 
-			printf("====== [execCommand; Child] = Running something.\n");
+				//redirect stdout (1) to targetFD
+				result = dup2(targetFD, 1);
+				if (result == -1){
+					perror("[error] DUP2 COMMAND FAILED TO REDIRECT");
+					exit(2);
+				}
+
+				//close on exec
+				fcntl(targetFD, F_SETFD, FD_CLOEXEC);
+			}
+
+			if (strcmp(redirIn, "") != 0){
+				//we need to redirect stdout to the outfile
+				printf("======= [execCommand, Child] = Noticed that redirection of stdin is required.\n");
+				fflush(stdout);
+
+				//open the target file to output to.
+				int sourceFD = open(redirOut, O_RDONLY);
+				if (sourceFD == -1){
+					perror("[error] FAILED TO OPEN FILE FOR INPUT REDIRECTION");
+					exit(1);
+				}
+
+				//redirect stdout (1) to targetFD
+				result = dup2(sourceFD, 1);
+				if (result == -1){
+					perror("[error] DUP2 COMMAND FAILED TO REDIRECT");
+					exit(2);
+				}
+
+				//close on execc
+				fcntl(sourceFD, F_SETFD, FD_CLOEXEC);
+			}
+
+			//now that we supposedly have redirection in place, run that command
+			result = 0;
+			commandArray[commandArrayIndex] = NULL;
+			result = execvp(commandArray[0], (char * const *)commandArray);
+
+			printf("====== [execCommand, Child] = Exec ran and returned: %d\n", result);
 			fflush(stdout);
-			sleep(4);
-			printf("====== [execCommand; Child] = Done running something.\n");
-			fflush(stdout);
+
+			//check for erroring out:
+			if (result == -1){
+				printf("%s: no such file or directory\n", commandArray[0]);
+				fprintf(stderr,"execvp() failed. errno=%d\n",errno);
+				perror("execvp");
+				fflush(stdout);
+				exit(3);
+			}
+
+			// printf("====== [execCommand; Child] = Running something.\n");
+			// fflush(stdout);
+			// sleep(4);
+			// printf("====== [execCommand; Child] = Done running something.\n");
+			// fflush(stdout);
 
 			exit(0);
 
