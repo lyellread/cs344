@@ -9,7 +9,10 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <assert.h>
+#include <sys/wait.h>
 
+
+int backgroundGlobal = 1;
 
 //======================= S U P P O R T I N G   F U N C T I O N S ============================//
 
@@ -139,13 +142,28 @@ void __cd(char ** commandArray, int commandArrayIndex) {
 }
 
 
-void __status(int lastReturnValue){
+int __status(int lastReturnValue, int mode){
+
+	int status = 0;
+
+	if (WIFEXITED(lastReturnValue) != 0){
+
+		// the program exited wiht a value
+		status = WEXITSTATUS(lastReturnValue);
+	}
+	else{
+
+		//a signal killed that boi return the int, but dont set status
+		return WTERMSIG(lastReturnValue);
+	}
 
 	//print the value of the exit status
-	printf("exit status %d\n", lastReturnValue);
+	if (mode){
+	printf("exit status %d\n", status);
 	fflush(stdout);
+	}
 
-	return;
+	return status;
 }
 
 void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
@@ -246,29 +264,96 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 	}
 }
 
-void execCommand(char ** commandArray, int commandArrayIndex, int backgroundFlag, int * lastReturnValue, char * redirIn, char * redirOut){
+void execCommand(char ** commandArray, 
+					int commandArrayIndex, 
+					int backgroundFlag, 
+					int * lastReturnValue, 
+					char * redirIn, 
+					char * redirOut, 
+					int * backgroundRunning, 
+					int * backgroundRunningIndex){
 
 
-	//set up redirection
+	pid_t forkPid = -42;
+	pid_t actualPid;
+	pid_t exitedPid;
+
+	forkPid = fork();
+
+	switch(forkPid){
+
+		case -1:
+
+			//failure!
+			perror("[error] FAILED FORK!");
+			exit(1);
+			break;
+
+		case 0:
+
+			//success! We're now the child boiiii
+
+			
+			//set redirection
 
 
-	//fork
+			//run dat command
+
+			printf("====== [execCommand; Child] = Running something.\n");
+			fflush(stdout);
+			sleep(4);
+			printf("====== [execCommand; Child] = Done running something.\n");
+			fflush(stdout);
+
+			exit(0);
+
+			break;
 
 
-	//execute that command wihtin a forked session
+		default:
 
+			//parent will exec this
+			
+			if (backgroundFlag && backgroundGlobal){
+				
+				actualPid = waitpid(forkPid, lastReturnValue, WNOHANG);
+				printf("background pid is %d\n", actualPid);
+				fflush(stdout);
+			}
 
-	//return to parent
+			else{
 
+				printf("====== [execCommand; Parent] = Default Started\n");
+				fflush(stdout);
+				actualPid = waitpid(forkPid, lastReturnValue, 0);
+				printf("====== [execCommand; Parent] = PID Quit with code: %d; actualPid: %d\n", __status(*lastReturnValue, 0), actualPid);
+				fflush(stdout);
+			}	
+	}
+
+	while ((exitedPid = waitpid(-1, lastReturnValue, WNOHANG)) > 0){
+
+		//we have process exitedPid that quit. Report that:
+		printf("background pid %d is done: exit value %d", exitedPid, __status(*lastReturnValue, 0));
+		fflush(stdout);
+	}
 }
+
+//void checkBackgroundProcesses()
 
 void runSmallsh(){
 
 	int backgroundFlag;
+	
 	char *commandArray[20];
 	int commandArrayIndex = 0;
+	
 	char redirOut[40];
 	char redirIn[40];
+	
+	int backgroundRunning[100];
+	int backgroundRunningIndex = 0;
+
 	int i;
 	int lastReturnValue = -420;
 
@@ -283,6 +368,8 @@ void runSmallsh(){
 				free(commandArray[i]);
 			}
 		}
+
+		//checkBackgroundProcesses(backgroundRunning, &backgroundRunningIndex);
 		
 		//get the input from promptInput()
 		promptInput(&backgroundFlag, commandArray, &commandArrayIndex, redirIn, redirOut);
@@ -298,7 +385,7 @@ void runSmallsh(){
 			}
 			else if ((strcmp(commandArray[0], "status") == 0)){
 
-				__status(lastReturnValue);
+				__status(lastReturnValue, 1);
 			}
 			else if ((strcmp(commandArray[0], "cd") == 0)){
 
@@ -308,13 +395,13 @@ void runSmallsh(){
 
 		//else execute the chosen command
 		else{
-			printf("== [runSmallsh] = BG:%d; Command:", commandArrayIndex);
+			printf("== [runSmallsh] = BG:%d; Command:", backgroundFlag);
 			fflush(stdout);
 			printArray(commandArray, commandArrayIndex);
 			printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
 			fflush(stdout);
 
-			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut);
+			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut, backgroundRunning, &backgroundRunningIndex);
 		}
 	}
 }
