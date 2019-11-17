@@ -112,6 +112,16 @@ int __status(int lastReturnValue, int mode){
 	}
 	return status;
 }
+void catchSIGINT (int signalNumber){
+	
+	const char * off_message = "terminated by signal 2\n";
+	write(1, off_message, strlen(off_message));
+	fflush(stdout);
+
+	return;
+
+}
+
 
 void catchSIGTSTP (int signalNumber){
 
@@ -148,7 +158,7 @@ void catchSIGTSTP (int signalNumber){
 void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayIndex, char * redirIn, char * redirOut){
 
 	//initialize those variables
-	char inputData[500];
+	char inputData[2048];
 	inputData[0] = '\0';
 
 	*backgroundFlag = 0;
@@ -234,7 +244,7 @@ void promptInput(int * backgroundFlag, char ** commandArray, int * commandArrayI
 
 			//before we can add the token to the array, we must check for a '$$' at the end of the
 			//string and replace it with the pid. 
-			char temp[100];
+			char temp[2048];
 			commandArray[*commandArrayIndex] = strdup(token);
 
 			//ok its not elegant but yeah.
@@ -295,9 +305,11 @@ void execCommand(char ** commandArray,
 			//success! We're now the child boiiii
 
 			//set it so that the child will get the sigint that we set to 'off' in a caller fxn
-
-			saSigint.sa_handler = SIG_DFL;
-			sigaction(SIGINT, &saSigint, NULL);
+			//only if no background flag
+			if (!backgroundFlag){
+				saSigint.sa_handler = SIG_DFL;
+				sigaction(SIGINT, &saSigint, NULL);
+			}
 
 			//set redirection
 
@@ -421,11 +433,11 @@ void runSmallsh(){
 
 	int backgroundFlag;
 	
-	char *commandArray[20];
+	char *commandArray[512];
 	int commandArrayIndex = 0;
 	
-	char redirOut[40];
-	char redirIn[40];
+	char redirOut[1024];
+	char redirIn[1024];
 
 	int i;
 	int lastReturnValue = -420;
