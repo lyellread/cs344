@@ -269,9 +269,7 @@ void execCommand(char ** commandArray,
 					int backgroundFlag, 
 					int * lastReturnValue, 
 					char * redirIn, 
-					char * redirOut, 
-					int * backgroundRunning, 
-					int * backgroundRunningIndex){
+					char * redirOut){
 
 
 	pid_t forkPid = -42;
@@ -314,13 +312,15 @@ void execCommand(char ** commandArray,
 
 			//parent will exec this
 			
+			//if the conditions are right to launch a background process, do that.
 			if (backgroundFlag && backgroundGlobal){
 				
 				actualPid = waitpid(forkPid, lastReturnValue, WNOHANG);
-				printf("background pid is %d\n", actualPid);
+				printf("background pid is %d\n", forkPid);
 				fflush(stdout);
 			}
 
+			//otherwise, launch as a foreground process.
 			else{
 
 				printf("====== [execCommand; Parent] = Default Started\n");
@@ -331,10 +331,12 @@ void execCommand(char ** commandArray,
 			}	
 	}
 
+	//iterate until there are no background procs left that have completed. 
+	//this while works right before input - that's why its here.
 	while ((exitedPid = waitpid(-1, lastReturnValue, WNOHANG)) > 0){
 
 		//we have process exitedPid that quit. Report that:
-		printf("background pid %d is done: exit value %d", exitedPid, __status(*lastReturnValue, 0));
+		printf("background pid %d is done: exit value %d\n", exitedPid, __status(*lastReturnValue, 0));
 		fflush(stdout);
 	}
 }
@@ -350,9 +352,6 @@ void runSmallsh(){
 	
 	char redirOut[40];
 	char redirIn[40];
-	
-	int backgroundRunning[100];
-	int backgroundRunningIndex = 0;
 
 	int i;
 	int lastReturnValue = -420;
@@ -368,8 +367,6 @@ void runSmallsh(){
 				free(commandArray[i]);
 			}
 		}
-
-		//checkBackgroundProcesses(backgroundRunning, &backgroundRunningIndex);
 		
 		//get the input from promptInput()
 		promptInput(&backgroundFlag, commandArray, &commandArrayIndex, redirIn, redirOut);
@@ -401,7 +398,7 @@ void runSmallsh(){
 			printf("== [runSmallsh] = InFile: %s; OutFile: %s.\n", redirIn, redirOut);
 			fflush(stdout);
 
-			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut, backgroundRunning, &backgroundRunningIndex);
+			execCommand(commandArray, commandArrayIndex, backgroundFlag, &lastReturnValue, redirIn, redirOut);
 		}
 	}
 }
