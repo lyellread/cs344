@@ -52,6 +52,8 @@ ${echo} "#5 POINTS: Number of characters in key70000, should be 70001:"
 [ -s key70000 ] || rm -f key70000 
 wc -m key70000
 ${echo}
+
+
 ${echo} "#-----------------------------------------"
 ${echo} '#otp_enc plaintext1 key20 $encport'
 ${echo} "#10 POINTS: Should return error about too-short key"
@@ -80,6 +82,8 @@ ${echo} '#-----------------------------------------'
 ${echo} '#5 POINTS: ciphertext1 should look encrypted'
 cat ciphertext1
 ${echo}
+
+
 ${echo} '#-----------------------------------------'
 ${echo} '#otp_dec ciphertext1 key70000 $encport'
 ${echo} '#5 POINTS: Should fail giving error that otp_dec cannot use otp_enc_d'

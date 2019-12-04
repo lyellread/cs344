@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h> 
 
-#include "charlist.h"
+#include "otp_core.h"
 
 int main(int argc, char * argv[]) {
 

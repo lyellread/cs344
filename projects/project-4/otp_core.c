@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "charlist.h"
+#include "otp_core.h"
 
 int get_index_of_char (char a){
 

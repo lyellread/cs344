@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
+#include "otp_core.h"
+
 void error(const char *msg) { perror(msg); exit(0); } // Error function used for reporting issues
 
 int main(int argc, char *argv[])
@@ -14,16 +16,32 @@ int main(int argc, char *argv[])
 	int socketFD, portNumber, charsWritten, charsRead;
 	struct sockaddr_in serverAddress;
 	struct hostent* serverHostInfo;
-	char buffer[256];
+	char buffer[SIZE];
     
-	if (argc < 3) { fprintf(stderr,"USAGE: %s hostname port\n", argv[0]); exit(0); } // Check usage & args
+	//if (argc < 3) { fprintf(stderr,"USAGE: %s hostname port\n", argv[0]); exit(0); } // Check usage & args
+
+	char A[SIZE];
+	FILE * A_file = fopen(argv[1], "r");
+	fgets(A, SIZE, A_file);
+	
+	A[strcspn(A, "\n")] = '\0';
+
+	char key[SIZE];
+	FILE * key_file = fopen(argv[2], "r");
+	fgets(key, SIZE, key_file);
+	
+	key[strcspn(key, "\n")] = '\0';
+
+	int A_len = strlen(A);
+	int key_len = strlen(key);
+
 
 	// Set up the server address struct
 	memset((char*)&serverAddress, '\0', sizeof(serverAddress)); // Clear out the address struct
-	portNumber = atoi(argv[2]); // Get the port number, convert to an integer from a string
+	portNumber = atoi(argv[3]); // Get the port number, convert to an integer from a string
 	serverAddress.sin_family = AF_INET; // Create a network-capable socket
 	serverAddress.sin_port = htons(portNumber); // Store the port number
-	serverHostInfo = gethostbyname(argv[1]); // Convert the machine name into a special form of address
+	serverHostInfo = gethostbyname("localhost"); // Convert the machine name into a special form of address
 	if (serverHostInfo == NULL) { fprintf(stderr, "CLIENT: ERROR, no such host\n"); exit(0); }
 	memcpy((char*)&serverAddress.sin_addr.s_addr, (char*)serverHostInfo->h_addr, serverHostInfo->h_length); // Copy in the address
 
@@ -40,6 +58,8 @@ int main(int argc, char *argv[])
 	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer array
 	fgets(buffer, sizeof(buffer) - 1, stdin); // Get input from the user, trunc to buffer - 1 chars, leaving \0
 	buffer[strcspn(buffer, "\n")] = '\0'; // Remove the trailing \n that fgets adds
+
+	//first, send the attempted s (enc)
 
 	// Send message to server
 	charsWritten = send(socketFD, buffer, strlen(buffer), 0); // Write to the server
