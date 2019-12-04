@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include <time.h> 
 
-//define the wordlist of valid characters to be used
-const char charlist[28] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+#include "charlist.h"
 
 int main(int argc, char * argv[]) {
 
 	//define variables
 	int i, idx;
+
+	//check for there being 1 arg
+	if (argc != 2){
+		fprintf(stderr, "Error: Improper Arguments Provided. Quitting Keygen.\n");
+		exit(3);
+	}
 
 	//seed random
 	srand(time(0));
@@ -17,7 +22,7 @@ int main(int argc, char * argv[]) {
 	//putchar to stdout.
 	for (i = 0; i < atoi(argv[1]); ++i){
 
-		idx = rand()%28;
+		idx = rand()%(charlist_len + 1);
 		putchar(charlist[idx]);
 	}
 
