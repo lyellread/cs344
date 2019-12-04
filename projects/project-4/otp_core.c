@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "charlist.h"
 
@@ -31,7 +32,7 @@ void otp_encrypt (char * pt, char * k, char * ct, int len){
 		//list + 1 so that if 27%28 = 27; 28%28 (oob) = 0 (ib).
 
 		current = (get_index_of_char(pt[i]) + get_index_of_char(k[i])) % (charlist_len-1);
-		printf("--[enc]--> PT[i]: [%d]; K[i]: [%d]; CT[i]: [%d]; i = %d.\n", pt[i], k[i], current, i);
+		//printf("--[enc]--> PT[i]: [%d]; K[i]: [%d]; CT[i]: [%d]; i = %d.\n", pt[i], k[i], current, i);
 		ct[i] = (char)charlist[current];
 	}
 }
@@ -48,30 +49,43 @@ void otp_decrypt (char * ct, char * k, char * pt, int len){
 
 		current = (get_index_of_char(ct[i]) - get_index_of_char(k[i]));
 		if (current < 0){current += charlist_len - 1;}
-		printf("--[dec]--> CT[i]: [%d]; K[i]: [%d]; PT[i]: [%d]; i = %d.\n",  ct[i], k[i], current, i);
+		//printf("--[dec]--> CT[i]: [%d]; K[i]: [%d]; PT[i]: [%d]; i = %d.\n",  ct[i], k[i], current, i);
 		pt[i] = (char) charlist[current];
 	}
 }
 
-int main(){
+int check_input (char * input, int * len){
 
-	char pt[100] = "ASASDFASODJ    FASLDJFLEWRLEWJROFWJFDCOD";
-	char k[100] = "KSOELDLPSOEKDTSDFIUSASJDFKASDFKASJDFKDSF";
-	char ct[100];
-	int len = 40;
+	int i;
 
-	pt[27] = '\0';
-	k[27] = '\0';
-	ct[27] = '\0';
+	printf("Length: %d\n", *len);
 
-	otp_encrypt(pt, k, ct, len);
+	//correct for newline
+	if (input[*len-1] == '\n'){
+		input[*len-1] = '\0';
+		*len = *len - 1;
 
-	printf ("-[main]--> Encrypted: %s\n", ct);
-	memset(pt, 0, 99);
+	}
 
-	otp_decrypt(ct, k, pt, len);
+	for (i = 0; i < *len; ++i){
 
-	printf("-[main]--> Decrypted: %s\n", pt);
+		if (get_index_of_char(input[i]) == -1){
+
+			fprintf(stderr, "Invalid Character at Index %d. Quitting Program.", i);
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+int main(int argc, char ** argv){
+
+	int a = strlen(argv[1]);
+
+	int j = check_input(argv[1], &a);
+
+	printf("%d", j);
 
 	return 0;
 
