@@ -63,7 +63,8 @@ int main(int argc, char *argv[])
 		//check if we are connected to the right other side
 		if (strcmp (buffer, "enc") == 0){
 			charsRead = send(establishedConnectionFD, "ok", 2, 0); // Send success back
-			if (charsRead < 0) error("ERROR writing to socket");		
+			if (charsRead < 0) error("ERROR writing to socket");
+			}	
 		
 		else {
 			charsRead = send(establishedConnectionFD, "error", 2, 0); // Send success back
@@ -80,6 +81,11 @@ int main(int argc, char *argv[])
 		printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 		charsToRead = atoi(buffer);
 
+		//repeat that to the client
+		charsRead = send(establishedConnectionFD, buffer, strlen(buffer), 0); // Send success back
+		if (charsRead < 0) error("ERROR writing to socket");
+
+
 		//read the first file == A
 		memset(buffer, '\0', SIZE);
 		charsRead = recv(establishedConnectionFD, buffer, SIZE, 0); // Read the client's message from the socket
@@ -92,6 +98,11 @@ int main(int argc, char *argv[])
 			error("SERVER: Read and Expect Mismatch");
 			//exit (2);
 		}
+
+		//give the client the "0" for the next one 
+
+		charsRead = send(establishedConnectionFD, "0", 1, 0); // Send success back
+		if (charsRead < 0) error("ERROR writing to socket");
 		
 		//read the second file = k
 		memset(buffer, '\0', SIZE);
@@ -116,6 +127,7 @@ int main(int argc, char *argv[])
 		close(establishedConnectionFD); // Close the existing socket which is connected to the client
 		//exit(0);
 	}
+
 	close(listenSocketFD); // Close the listening socket
 	return 0; 
 }
