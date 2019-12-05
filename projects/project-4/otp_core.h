@@ -1,4 +1,14 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
+#include <assert.h>
+
 #ifndef OTP_CORE_H
 #define OTP_CORE_H
 
@@ -14,5 +24,11 @@
 	
 	//define the functions to use by the clients
 	int check_input (char * input, int * len);
+	void error(const char * msg);
+	FILE * open_file(char * filename, char * method);
+
+	//define the otp and otp_d functions to be used
+	void otp (int port; char * A, char * k, int enc);
+	void otp_d(int port);
 
 #endif

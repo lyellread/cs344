@@ -1,10 +1,31 @@
 //top level otp program - performs enc, dec 'primitives'
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
 #include "otp_core.h"
+
+void error(const char * msg) { 
+	
+	perror(msg); 
+	exit(0); 
+
+} // Error function used for reporting issues
+
+
+FILE * open_file(char * filename, char * method){
+
+	//printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
+	errno = 0;
+	FILE * file = fopen(filename, method);
+
+		if (file == NULL){
+			//if error, quit.
+			//printf("ERROR ON FOPEN, ERRNO: %d\n", errno);
+			exit(-1);
+		}
+		else{
+			//printf("[FOPEN: FD: %d]\n", fileno(file));
+			return file;
+		}
+}
 
 int get_index_of_char (char a){
 
