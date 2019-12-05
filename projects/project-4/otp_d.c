@@ -35,6 +35,7 @@ void otp_d(int port, int enc){
 	char A[SIZE];
 	char k[SIZE];
 	char B[SIZE];
+	char mode[4];
 
 	if(enc){
 		strcpy(mode, "enc");

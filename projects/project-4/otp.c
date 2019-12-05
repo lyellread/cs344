@@ -21,7 +21,7 @@ int recvData(char * buffer, int socketFD){
 
 }
 
-void otp (int port; char * A, char * k, int enc){
+void otp (int port, char * A, char * k, int enc){
 
 	int socketFD, charsWritten, charsRead;
 	struct sockaddr_in serverAddress;

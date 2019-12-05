@@ -13,7 +13,6 @@ void error(const char * msg) {
 FILE * open_file(char * filename, char * method){
 
 	//printf("\n==== Function openFile called with args: %s, %s\n", filename, method);
-	errno = 0;
 	FILE * file = fopen(filename, method);
 
 		if (file == NULL){
