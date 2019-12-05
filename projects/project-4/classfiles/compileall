@@ -1,0 +1,3 @@
+#!/bin/bash
+gcc -o server server.c ../otp_core.c
+gcc -o client client.c

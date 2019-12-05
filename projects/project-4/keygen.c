@@ -22,7 +22,7 @@ int main(int argc, char * argv[]) {
 	//putchar to stdout.
 	for (i = 0; i < atoi(argv[1]); ++i){
 
-		idx = rand()%(charlist_len + 1);
+		idx = rand()%(charlist_len);
 		putchar(charlist[idx]);
 	}
 

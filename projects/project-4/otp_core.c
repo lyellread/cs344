@@ -33,6 +33,7 @@ void otp_encrypt (char * pt, char * k, char * ct, int len){
 
 		current = (get_index_of_char(pt[i]) + get_index_of_char(k[i])) % (charlist_len-1);
 		//printf("--[enc]--> PT[i]: [%d]; K[i]: [%d]; CT[i]: [%d]; i = %d.\n", pt[i], k[i], current, i);
+		//printf("->%d<-\n", current);
 		ct[i] = (char)charlist[current];
 	}
 }
@@ -58,7 +59,7 @@ int check_input (char * input, int * len){
 
 	int i;
 
-	printf("Length: %d\n", *len);
+	//printf("Length: %d\n", *len);
 
 	//correct for newline
 	if (input[*len-1] == '\n'){
@@ -79,14 +80,14 @@ int check_input (char * input, int * len){
 	return 1;
 }
 
-int main(int argc, char ** argv){
+// int main(int argc, char ** argv){
 
-	int a = strlen(argv[1]);
+// 	int a = strlen(argv[1]);
 
-	int j = check_input(argv[1], &a);
+// 	int j = check_input(argv[1], &a);
 
-	printf("%d", j);
+// 	printf("%d", j);
 
-	return 0;
+// 	return 0;
 
-}
+// }

@@ -8,7 +8,26 @@
 
 #include "otp_core.h"
 
+
 void error(const char *msg) { perror(msg); exit(1); } // Error function used for reporting issues
+
+
+int sendData(char * buffer, int socketFD){
+	int charsSent = send(socketFD, buffer, strlen(buffer), 0); // Send success back
+	if (charsSent < 0) error("ERROR writing to socket");
+
+	return charsSent;
+}
+
+int recvData(char * buffer, int socketFD){
+
+	memset(buffer, '\0', SIZE);
+	int charsRead = recv(socketFD, buffer, SIZE, 0); // Read the client's message from the socket
+	if (charsRead < 0) error("SERVER: ERROR: Failed reading from socket");
+	//printf("SERVER: I received this from the client: \"%s\"\n", buffer);
+
+	return charsRead;
+}
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +42,9 @@ int main(int argc, char *argv[])
 	socklen_t sizeOfClientInfo;
 	char buffer[SIZE];
 	struct sockaddr_in serverAddress, clientAddress;
+
+	pid_t pid;
+
 
 	char A[SIZE];
 	char k[SIZE];
@@ -54,80 +76,98 @@ int main(int argc, char *argv[])
 		establishedConnectionFD = accept(listenSocketFD, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); // Accept
 		if (establishedConnectionFD < 0) error("ERROR on accept");
 
-		// Get the message from the client and display it
-		memset(buffer, '\0', SIZE);
-		charsRead = recv(establishedConnectionFD, buffer, SIZE, 0); // Read the client's message from the socket
-		if (charsRead < 0) error("ERROR reading from socket");
-		printf("SERVER: I received this from the client: \"%s\"\n", buffer);
+		pid = fork();
 
-		//check if we are connected to the right other side
-		if (strcmp (buffer, "enc") == 0){
-			charsRead = send(establishedConnectionFD, "ok", 2, 0); // Send success back
-			if (charsRead < 0) error("ERROR writing to socket");
-			}	
-		
-		else {
-			charsRead = send(establishedConnectionFD, "error", 2, 0); // Send success back
-			error ("SERVER: Wrong Connction");
-			if (charsRead < 0) error("ERROR writing to socket");
-			close(establishedConnectionFD); // Close the existing socket which is connected to the client
-			//exit(2);
-		}
+		switch (pid){
 
-		//expect the number of bytes to be read (x2, as files are same size)
-		memset(buffer, '\0', SIZE);
-		charsRead = recv(establishedConnectionFD, buffer, SIZE, 0); // Read the client's message from the socket
-		if (charsRead < 0) error("ERROR reading from socket");
-		printf("SERVER: I received this from the client: \"%s\"\n", buffer);
-		charsToRead = atoi(buffer);
+			case -1:
 
-		//repeat that to the client
-		charsRead = send(establishedConnectionFD, buffer, strlen(buffer), 0); // Send success back
-		if (charsRead < 0) error("ERROR writing to socket");
+				//failure! 
+				error("SERVER: ERROR: FORK Failed!");
+				exit (4);
+				break;
+
+			case 0:
+
+				//this is the child process
+
+				// C H E C K   P R O P E R   S E R V E R
+
+				//get the client type.
+				recvData(buffer, establishedConnectionFD);
+
+				//check if we are connected to the right other side
+				if (strcmp (buffer, "enc") == 0){
+					
+					memset(buffer, '\0', SIZE);
+					strcpy(buffer, "ok");
+					sendData(buffer, establishedConnectionFD);
+				}	
+				
+				else {
+					
+					memset(buffer, '\0', SIZE);
+					strcpy(buffer, "error");
+					sendData(buffer, establishedConnectionFD);
+					close(establishedConnectionFD); // Close the existing socket which is connected to the client
+					//exit(2);
+				}
 
 
-		//read the first file == A
-		memset(buffer, '\0', SIZE);
-		charsRead = recv(establishedConnectionFD, buffer, SIZE, 0); // Read the client's message from the socket
-		if (charsRead < 0) error("ERROR reading from socket");
-		printf("SERVER: I received this from the client: \"%s\"\n", buffer);
-		strcpy(A, buffer);
+				// T R A N S M I S S I O N   L E N G T H
 
-		//check len OK
-		if (!charsRead == charsToRead){
-			error("SERVER: Read and Expect Mismatch");
-			//exit (2);
-		}
+				//expect the number of bytes to be read (x2, as files are same size)
+				recvData(buffer, establishedConnectionFD);
+				charsToRead = atoi(buffer);
 
-		//give the client the "0" for the next one 
+				//repeat that to the client
+				sendData(buffer, establishedConnectionFD);
 
-		charsRead = send(establishedConnectionFD, "0", 1, 0); // Send success back
-		if (charsRead < 0) error("ERROR writing to socket");
-		
-		//read the second file = k
-		memset(buffer, '\0', SIZE);
-		charsRead = recv(establishedConnectionFD, buffer, SIZE, 0); // Read the client's message from the socket
-		if (charsRead < 0) error("ERROR reading from socket");
-		printf("SERVER: I received this from the client: \"%s\"\n", buffer);
-		strcpy(k, buffer);
+				memset(buffer, '\0', SIZE);
 
-		//check len OK
-		if (!charsRead == charsToRead){
-			error("SERVER: Read and Expect Mismatch");
-			//exit (2);
-		}
 
-		//compute the return value;
-		strcpy(B, "THE OUTPUT WILL BE HERE WHEN COMPLETE");
+				// R E C V   {A}
 
-		//send back the result
-		charsRead = send(establishedConnectionFD, B, strlen(B), 0);
-		if (charsRead < 0) error("ERROR writing to socket");
+				int charsRead = recv(establishedConnectionFD, A, charsToRead, MSG_WAITALL);
+				if (charsRead < 0) error("ERROR reading from socket");
+				//printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 
-		close(establishedConnectionFD); // Close the existing socket which is connected to the client
-		//exit(0);
+				strcpy(buffer, "ok");
+				sendData(buffer, establishedConnectionFD);
+
+
+				// R E C V   {K}
+
+				charsRead = recv(establishedConnectionFD, k, charsToRead, MSG_WAITALL);
+				if (charsRead < 0) error("ERROR reading from socket");
+				//printf("SERVER: I received this from the client: \"%s\"\n", buffer);
+
+				memset(buffer, 0, sizeof(buffer));
+				strcpy(buffer, "ok");
+				sendData(buffer, establishedConnectionFD);
+
+
+				// R E C V "next"
+
+				recvData(buffer, establishedConnectionFD);
+				if (strcmp(buffer, "next") != 0){error("SERVER: ERROR: Expected 'next'");}
+
+
+				// S E N D   {B}
+
+				otp_encrypt(A, k, B, strlen(A));
+				sendData(B, establishedConnectionFD);
+
+				recvData(buffer, establishedConnectionFD);
+
+				close(establishedConnectionFD); // Close the existing socket which is connected to the client
+				exit(0);
+				break;
+
+			default:
+
+				close(establishedConnectionFD);
+				break;
+			}
 	}
-
-	close(listenSocketFD); // Close the listening socket
-	return 0; 
 }

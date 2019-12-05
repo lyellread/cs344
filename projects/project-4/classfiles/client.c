@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
+#include <assert.h>
 
 #include "otp_core.h"
 
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
 	char A[SIZE];
 	FILE * A_file = fopen(argv[1], "r");
 	fgets(A, SIZE, A_file);
+	char * A_real = A;
 	
 	A[strcspn(A, "\n")] = '\0';
 
@@ -51,10 +53,10 @@ int main(int argc, char *argv[])
 	fgets(k, SIZE, k_file);
 	
 	k[strcspn(k, "\n")] = '\0';
+	char * k_real = k;
 
-	int A_len = strlen(A);
-	int k_len = strlen(k);
 
+	char B[SIZE];
 
 	// Set up the server address struct
 	memset((char*)&serverAddress, '\0', sizeof(serverAddress)); // Clear out the address struct
@@ -87,37 +89,128 @@ int main(int argc, char *argv[])
 	// Send length
 	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
 	sprintf(buffer, "%ld", strlen(k));
-	print("CLIENT: DEBUG: STRLE(k) = %d.\n", strlen(k));
+	//printf("CLIENT: DEBUG: STRLEN(%s) = %ld.\n", k, strlen(k));
 	sendData(buffer, socketFD);
-	// Get return message from server (ok / error)
-	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
-	charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end
-	if (charsRead < 0) error("CLIENT: ERROR reading from socket");
-	printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
+	
+	//get confirmation of length
+	recvData(buffer, socketFD);
+	assert(atoi(buffer) == strlen(k));
 
 
-	// Send first message to server
-
+	//send A
 	sendData(A, socketFD);
+	recvData(buffer, socketFD);
 
-	// Get return message from server (ok / error)
-	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
-	charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end
-	if (charsRead < 0) error("CLIENT: ERROR reading from socket");
-	printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
+	//send K
+	sendData(k, socketFD);
+	recvData(buffer, socketFD);
 
+	//ask for B
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, "next");
+	sendData(buffer, socketFD);
 
-	// Send second message to server
-	charsWritten = send(socketFD, k, strlen(k), 0); // Write to the server
-	if (charsWritten < 0) error("CLIENT: ERROR writing to socket");
-	if (charsWritten < strlen(k)) printf("CLIENT: WARNING: Not all data written to socket!\n");
+	//recieve B
+	recv(socketFD, B, strlen(A), MSG_WAITALL);
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, "ok");
+	sendData(buffer, socketFD);
 
-	// Get return message from server
-	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
-	charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end
-	if (charsRead < 0) error("CLIENT: ERROR reading from socket");
-	printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
+	// // Send first message to server
+	// int charsToSend = strlen(A);
+	// charsWritten = 0;
 
-	close(socketFD); // Close the socket
+	// while (charsWritten < charsToSend){
+		
+	// 	memset(buffer, '\0', sizeof(buffer));
+	// 	if (strlen(A_real) <2048){
+	// 		charsWritten += sendData(A_real, socketFD);
+	// 	}
+	// 	else{
+	// 		strncpy(buffer, A_real, 2048);
+	// 			buffer[2048] = '\0';
+	// 		A_real += 2048 * sizeof(char);
+	// 		charsWritten += sendData(buffer, socketFD);
+	// 	}
+
+	// 	memset(buffer, '\0', sizeof(buffer));
+	// 	recvData(buffer, socketFD);
+	// }
+
+	// //tell the server to break
+	// strcpy(buffer, "next");
+	// sendData(buffer, socketFD);
+
+	// //wait for reply
+	// recvData(buffer, socketFD);
+
+	// // Send second message to server
+	// charsToSend = strlen(k);
+	// charsWritten = 0;
+
+	// while (charsWritten < charsToSend){
+		
+	// 	memset(buffer, '\0', sizeof(buffer));
+	// 	if (strlen(k_real) <2048){
+	// 		charsWritten += sendData(k_real, socketFD);
+	// 	}
+	// 	else{
+	// 		strncpy(buffer, k_real, 2048);
+	// 			buffer[2048] = '\0';
+	// 		A_real += 2048 * sizeof(char);
+	// 		charsWritten += sendData(buffer, socketFD);
+	// 	}
+
+	// 	memset(buffer, '\0', sizeof(buffer));
+	// 	recvData(buffer, socketFD);
+	// }
+
+	// strcpy(buffer, "eot");
+	// sendData(buffer, socketFD);
+
+	// recvData(buffer, socketFD);
+
+	// strcpy(buffer, "start");
+	// sendData(buffer, socketFD);
+
+	// //copy the len
+	// recvData(buffer, socketFD);
+	// sendData(buffer, socketFD);
+
+	// int charsToRecv = atoi(buffer);
+	// charsRead = 0;
+
+	// //sendData(buffer, socketFD);
+
+	// while (1){
+
+	// 	recvData(buffer, socketFD);
+
+	// 	if(strcmp(buffer, "eoc") == 0){
+
+	// 		// memset(buffer, '\0', SIZE);
+	// 		// strcpy(buffer, "eoc");
+	// 		// sendData(buffer, socketFD);
+			
+	// 		break;
+	// 	}
+	// 	else{
+	// 		strcat(B, buffer);
+	// 	}
+
+	// 	memset(buffer, '\0', SIZE);
+	// 	strcpy(buffer, "ok");
+	// 	sendData(buffer, socketFD);
+	// }
+
+	// if (charsToRecv != strlen(B)){
+	// 	error("CLIENT: ERROR: Read Length Discrepancy");
+	// }
+
+	close(socketFD);
+
+	printf("%s\n", B);
+
+	
 	return 0;
 }
