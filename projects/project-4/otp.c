@@ -3,6 +3,7 @@
 
 int sendData(char * buffer, int socketFD){
 
+	//send the data. report error on failure
 	int charsWritten = send(socketFD, buffer, strlen(buffer), 0); // Write to the server
 	if (charsWritten < 0) error("CLIENT: ERROR writing to socket");
 	if (charsWritten < strlen(buffer)) printf("CLIENT: WARNING: Not all data written to socket!\n");
@@ -12,6 +13,7 @@ int sendData(char * buffer, int socketFD){
 
 int recvData(char * buffer, int socketFD){
 
+	//srecv the data. report error on failure
 	memset(buffer, '\0', SIZE); // Clear out the buffer again for reuse
 	int charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end
 	if (charsRead < 0) error("CLIENT: ERROR reading from socket");
@@ -23,6 +25,7 @@ int recvData(char * buffer, int socketFD){
 
 void otp (int port, char * A, char * k, int enc){
 
+	//init vars
 	int socketFD;
 	struct sockaddr_in serverAddress;
 	struct hostent* serverHostInfo;
@@ -30,6 +33,7 @@ void otp (int port, char * A, char * k, int enc){
 	char mode[4];
 	char B[SIZE];
 
+	//set mode
 	if(enc){
 		strcpy(mode, "enc");
 	}

@@ -2,6 +2,8 @@
 #include "otp_core.h"
 
 int sendData(char * buffer, int socketFD){
+
+	//send data
 	int charsSent = send(socketFD, buffer, strlen(buffer), 0); // Send success back
 	if (charsSent < 0) error("ERROR writing to socket");
 
@@ -10,6 +12,7 @@ int sendData(char * buffer, int socketFD){
 
 int recvData(char * buffer, int socketFD){
 
+	//recieve data
 	memset(buffer, '\0', SIZE);
 	int charsRead = recv(socketFD, buffer, SIZE, 0); // Read the client's message from the socket
 	if (charsRead < 0) error("SERVER: ERROR: Failed reading from socket");
@@ -20,6 +23,7 @@ int recvData(char * buffer, int socketFD){
 
 void otp_d(int port, int enc){
 
+	//init some vars
 	int listenSocketFD;
 	int establishedConnectionFD;
 
@@ -36,6 +40,8 @@ void otp_d(int port, int enc){
 	char B[SIZE];
 	char mode[4];
 
+
+	//set the mode
 	if(enc){
 		strcpy(mode, "enc");
 	}
