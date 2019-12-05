@@ -12,7 +12,7 @@ int sendData(char * buffer, int socketFD){
 
 int recvData(char * buffer, int socketFD){
 
-	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
+	memset(buffer, '\0', SIZE); // Clear out the buffer again for reuse
 	int charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end
 	if (charsRead < 0) error("CLIENT: ERROR reading from socket");
 	//printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
@@ -23,7 +23,7 @@ int recvData(char * buffer, int socketFD){
 
 void otp (int port, char * A, char * k, int enc){
 
-	int socketFD, charsWritten, charsRead;
+	int socketFD;
 	struct sockaddr_in serverAddress;
 	struct hostent* serverHostInfo;
 	char buffer[SIZE];

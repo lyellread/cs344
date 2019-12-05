@@ -23,7 +23,6 @@ void otp_d(int port, int enc){
 	int listenSocketFD;
 	int establishedConnectionFD;
 
-	int charsRead;
 	int charsToRead;
 
 	socklen_t sizeOfClientInfo;
@@ -103,7 +102,7 @@ void otp_d(int port, int enc){
 					strcpy(buffer, "error");
 					sendData(buffer, establishedConnectionFD);
 					close(establishedConnectionFD); // Close the existing socket which is connected to the client
-					//exit(2);
+					exit(2);
 				}
 
 
@@ -158,14 +157,16 @@ void otp_d(int port, int enc){
 
 				recvData(buffer, establishedConnectionFD);
 
-				close(establishedConnectionFD); // Close the existing socket which is connected to the client
+				//close(establishedConnectionFD); // Close the existing socket which is connected to the client
 				exit(0);
 				break;
 
 			default:
 
-				close(establishedConnectionFD);
-				break;
+				wait(NULL);
+				
 			}
+		close(establishedConnectionFD);
 	}
+	close(listenSocketFD);
 }

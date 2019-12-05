@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <assert.h>
+#include<sys/wait.h> 
 
 #ifndef OTP_CORE_H
 #define OTP_CORE_H
@@ -24,7 +25,7 @@
 	
 	//define the functions to use by the clients
 	int check_input (char * input, int * len);
-	void error(const char * msg);
+	void error(char * msg);
 	FILE * open_file(char * filename, char * method);
 
 	//define the otp and otp_d functions to be used

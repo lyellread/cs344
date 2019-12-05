@@ -2,9 +2,10 @@
 
 #include "otp_core.h"
 
-void error(const char * msg) { 
+void error(char * msg) { 
 	
-	perror(msg); 
+	//perror(msg); 
+	fprintf(stderr, "ERROR: %s\n", msg);
 	exit(0); 
 
 } // Error function used for reporting issues
