@@ -24,7 +24,7 @@ int main(int argc, char ** argv){
 	k[strcspn(k, "\n")] = '\0';
 
 	if (strlen(A) != strlen(k)){
-		error("[ cipher | plain ]text and Key length mismatch.")
+		error("[ cipher | plain ]text and Key length mismatch.");
 	}
 
 	otp(atoi(argv[3]), A, k, 0);

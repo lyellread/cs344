@@ -18,7 +18,7 @@ int recvData(char * buffer, int socketFD){
 	return charsRead;
 }
 
-void otp_d(int port){
+void otp_d(int port, int enc){
 
 	int listenSocketFD;
 	int establishedConnectionFD;
@@ -32,10 +32,16 @@ void otp_d(int port){
 
 	pid_t pid;
 
-
 	char A[SIZE];
 	char k[SIZE];
 	char B[SIZE];
+
+	if(enc){
+		strcpy(mode, "enc");
+	}
+	else{
+		strcpy(mode, "dec");
+	}
 
 	//if (argc < 2) { fprintf(stderr,"USAGE: %s port\n", argv[0]); exit(1); } // Check usage & args
 
@@ -83,7 +89,7 @@ void otp_d(int port){
 				recvData(buffer, establishedConnectionFD);
 
 				//check if we are connected to the right other side
-				if (strcmp (buffer, "enc") == 0){
+				if (strcmp (buffer, mode) == 0){
 					
 					memset(buffer, '\0', SIZE);
 					strcpy(buffer, "ok");
@@ -140,8 +146,13 @@ void otp_d(int port){
 
 
 				// S E N D   {B}
+				if(enc){
+					otp_encrypt(A, k, B, strlen(A));
+				}
+				else{
+					otp_decrypt(A, k, B, strlen(A));
+				}
 
-				otp_encrypt(A, k, B, strlen(A));
 				sendData(B, establishedConnectionFD);
 
 				recvData(buffer, establishedConnectionFD);

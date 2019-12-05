@@ -29,6 +29,6 @@
 
 	//define the otp and otp_d functions to be used
 	void otp (int port; char * A, char * k, int enc);
-	void otp_d(int port);
+	void otp_d(int port, int enc);
 
 #endif

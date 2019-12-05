@@ -7,6 +7,6 @@ int main(int argc, char ** argv){
 		exit(2);
 	}
 
-	otp_d(atoi(argv[1]));
+	otp_d(atoi(argv[1]), 0);
 	exit(0);
 }
