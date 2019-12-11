@@ -29,7 +29,7 @@ int main(int argc, char ** argv){
 	k[strcspn(k, "\n")] = '\0';
 
 	//check lengths
-	if (strlen(A) != strlen(k)){
+	if (strlen(A) > strlen(k)){
 		error("[ cipher | plain ] text and Key length mismatch.");
 	}
 
