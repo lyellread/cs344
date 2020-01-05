@@ -6,7 +6,8 @@ rooms: readly.buildrooms.c
 	make clean && make rooms_base
 clean:
 	rm -rf ./readly.rooms.??*
-
+	rm ./readly.buildrooms
+	rm ./readly.adventure
 #abbreviations cause im lazy :)
 
 a:
